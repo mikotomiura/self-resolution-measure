@@ -21,6 +21,11 @@ When a debugging episode is closed by *either* a fix *or* the developer stopping
 - D2 values under `table5` (R0 = 11/17, R0′ = 9/17) were computed by hand on 2026-09-28 before this repository existed. The body-text discrepancy (S5TA, P1TA) was noticed on the same day and its effect was worked out by hand once (numerator effect about 1/17) before the rule and its three quotes were fixed in `data/p434/text_external.csv`. The primary definition (`table5`) was set on 2026-09-28 before that and was not changed.
 - `config.json` was committed before the analysis code produced `results/`.
 
+## D2 transcription
+
+- Transcription A (the main analyst) and transcription B (an independent coder given only the PDF, without access to A) are byte-identical.
+- For the body-text sensitivity, coder B independently listed the same two tasks that Table 5 omits (P1TA: colleagues and reports of similar issues; S5TA: brainstorming with stream viewers). B also found a documentation mention for "S4" that cannot be attributed to S4TA or S4TB; Table 5 lists S4TB. It is not added. S4TA is resolved, so adding it would lower R0 and R0′ by the same 1/17 and leave the numerator effect unchanged.
+
 ## Deviations
 
 (none yet)
