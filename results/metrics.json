@@ -7,6 +7,10 @@
   },
   "d1": {
     "developers": 11,
+    "diagnostics": {
+      "same_start_debugging_blocks": 0,
+      "zero_length_episodes": 0
+    },
     "outcome_codes": {
       "DF1": 73,
       "DF2": 2,
@@ -31,7 +35,7 @@
             "item": "time_share_top23",
             "match": true,
             "observed": 0.7947,
-            "observed_text": "0.795",
+            "observed_text": "0.7947",
             "quote": "79% of the total episodes' time stemming from 23 episodes",
             "reported": 0.79
           },
@@ -101,7 +105,7 @@
             "item": "time_share_top23",
             "match": true,
             "observed": 0.7947,
-            "observed_text": "0.795",
+            "observed_text": "0.7947",
             "quote": "79% of the total episodes' time stemming from 23 episodes",
             "reported": 0.79
           },
@@ -171,7 +175,7 @@
             "item": "time_share_top23",
             "match": true,
             "observed": 0.7947,
-            "observed_text": "0.795",
+            "observed_text": "0.7947",
             "quote": "79% of the total episodes' time stemming from 23 episodes",
             "reported": 0.79
           },
@@ -241,7 +245,7 @@
             "item": "time_share_top23",
             "match": true,
             "observed": 0.7947,
-            "observed_text": "0.795",
+            "observed_text": "0.7947",
             "quote": "79% of the total episodes' time stemming from 23 episodes",
             "reported": 0.79
           },
@@ -313,9 +317,13 @@
               0.633333,
               0.791677
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.105769,
               0.014714
+            ],
+            "denominator_only_effect": [
+              -0.192224,
+              -0.06679
             ],
             "numerator_effect": [
               0.045974,
@@ -323,7 +331,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -335,7 +350,8 @@
           "R0": 0.685393,
           "R0_prime": 0.595506,
           "R1": 0.726027,
-          "denominator_effect": -0.040634,
+          "conditioning_effect": -0.040634,
+          "denominator_only_effect": -0.130522,
           "numerator_effect": 0.089888
         },
         "unresolved_no_consult": 8,
@@ -374,9 +390,13 @@
               0.611111,
               0.792208
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.100531,
               0.01907
+            ],
+            "denominator_only_effect": [
+              -0.177966,
+              -0.046253
             ],
             "numerator_effect": [
               0.033898,
@@ -384,7 +404,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -396,7 +423,8 @@
           "R0": 0.685393,
           "R0_prime": 0.606742,
           "R1": 0.72,
-          "denominator_effect": -0.034607,
+          "conditioning_effect": -0.034607,
+          "denominator_only_effect": -0.113258,
           "numerator_effect": 0.078652
         },
         "unresolved_no_consult": 7,
@@ -435,9 +463,13 @@
               0.647059,
               0.8
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.109156,
               0.013731
+            ],
+            "denominator_only_effect": [
+              -0.192185,
+              -0.070299
             ],
             "numerator_effect": [
               0.046506,
@@ -445,7 +477,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -457,7 +496,8 @@
           "R0": 0.696629,
           "R0_prime": 0.606742,
           "R1": 0.739726,
-          "denominator_effect": -0.043097,
+          "conditioning_effect": -0.043097,
+          "denominator_only_effect": -0.132984,
           "numerator_effect": 0.089888
         },
         "unresolved_no_consult": 8,
@@ -496,9 +536,13 @@
               0.622951,
               0.8
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.103763,
               0.01802
+            ],
+            "denominator_only_effect": [
+              -0.181651,
+              -0.047922
             ],
             "numerator_effect": [
               0.032258,
@@ -506,7 +550,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -518,7 +569,8 @@
           "R0": 0.696629,
           "R0_prime": 0.617978,
           "R1": 0.733333,
-          "denominator_effect": -0.036704,
+          "conditioning_effect": -0.036704,
+          "denominator_only_effect": -0.115356,
           "numerator_effect": 0.078652
         },
         "unresolved_no_consult": 7,
@@ -557,9 +609,13 @@
               0.727273,
               0.881582
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.080702,
               0.007681
+            ],
+            "denominator_only_effect": [
+              -0.214286,
+              -0.082775
             ],
             "numerator_effect": [
               0.067568,
@@ -567,7 +623,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -579,7 +642,8 @@
           "R0": 0.786517,
           "R0_prime": 0.674157,
           "R1": 0.821918,
-          "denominator_effect": -0.035401,
+          "conditioning_effect": -0.035401,
+          "denominator_only_effect": -0.147761,
           "numerator_effect": 0.11236
         },
         "unresolved_no_consult": 10,
@@ -618,9 +682,13 @@
               0.7,
               0.881579
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.072581,
               0.01362
+            ],
+            "denominator_only_effect": [
+              -0.19814,
+              -0.055478
             ],
             "numerator_effect": [
               0.054054,
@@ -628,7 +696,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -640,7 +715,8 @@
           "R0": 0.786517,
           "R0_prime": 0.685393,
           "R1": 0.813333,
-          "denominator_effect": -0.026816,
+          "conditioning_effect": -0.026816,
+          "denominator_only_effect": -0.12794,
           "numerator_effect": 0.101124
         },
         "unresolved_no_consult": 9,
@@ -679,9 +755,13 @@
               0.702118,
               0.878049
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.078501,
               0.009777
+            ],
+            "denominator_only_effect": [
+              -0.212958,
+              -0.079077
             ],
             "numerator_effect": [
               0.066667,
@@ -689,7 +769,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -701,7 +788,8 @@
           "R0": 0.775281,
           "R0_prime": 0.662921,
           "R1": 0.808219,
-          "denominator_effect": -0.032938,
+          "conditioning_effect": -0.032938,
+          "denominator_only_effect": -0.145298,
           "numerator_effect": 0.11236
         },
         "unresolved_no_consult": 10,
@@ -740,9 +828,13 @@
               0.680851,
               0.876408
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.07214,
               0.014716
+            ],
+            "denominator_only_effect": [
+              -0.199005,
+              -0.051909
             ],
             "numerator_effect": [
               0.051948,
@@ -750,7 +842,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 89,
@@ -762,7 +861,8 @@
           "R0": 0.775281,
           "R0_prime": 0.674157,
           "R1": 0.8,
-          "denominator_effect": -0.024719,
+          "conditioning_effect": -0.024719,
+          "denominator_only_effect": -0.125843,
           "numerator_effect": 0.101124
         },
         "unresolved_no_consult": 9,
@@ -807,7 +907,8 @@
             "R0": 0.0,
             "R0_prime": 0.0,
             "R1": 0.0,
-            "denominator_effect": 0.0,
+            "conditioning_effect": 0.0,
+            "denominator_only_effect": 0.0,
             "numerator_effect": 0.0
           }
         },
@@ -830,7 +931,8 @@
             "R0": 0.78481,
             "R0_prime": 0.683544,
             "R1": 0.794118,
-            "denominator_effect": -0.009308,
+            "conditioning_effect": -0.009308,
+            "denominator_only_effect": -0.110573,
             "numerator_effect": 0.101266
           }
         }
@@ -855,7 +957,8 @@
             "R0": 0.0,
             "R0_prime": 0.0,
             "R1": 0.0,
-            "denominator_effect": 0.0,
+            "conditioning_effect": 0.0,
+            "denominator_only_effect": 0.0,
             "numerator_effect": 0.0
           }
         },
@@ -878,7 +981,8 @@
             "R0": 0.772152,
             "R0_prime": 0.670886,
             "R1": 0.779412,
-            "denominator_effect": -0.00726,
+            "conditioning_effect": -0.00726,
+            "denominator_only_effect": -0.108526,
             "numerator_effect": 0.101266
           }
         }
@@ -903,7 +1007,8 @@
             "R0": 0.3,
             "R0_prime": 0.1,
             "R1": 0.2,
-            "denominator_effect": 0.1,
+            "conditioning_effect": 0.1,
+            "denominator_only_effect": -0.1,
             "numerator_effect": 0.2
           }
         },
@@ -926,7 +1031,8 @@
             "R0": 0.848101,
             "R0_prime": 0.746835,
             "R1": 0.867647,
-            "denominator_effect": -0.019546,
+            "conditioning_effect": -0.019546,
+            "denominator_only_effect": -0.120812,
             "numerator_effect": 0.101266
           }
         }
@@ -951,7 +1057,8 @@
             "R0": 0.3,
             "R0_prime": 0.1,
             "R1": 0.2,
-            "denominator_effect": 0.1,
+            "conditioning_effect": 0.1,
+            "denominator_only_effect": -0.1,
             "numerator_effect": 0.2
           }
         },
@@ -974,7 +1081,8 @@
             "R0": 0.835443,
             "R0_prime": 0.734177,
             "R1": 0.852941,
-            "denominator_effect": -0.017498,
+            "conditioning_effect": -0.017498,
+            "denominator_only_effect": -0.118764,
             "numerator_effect": 0.101266
           }
         }
@@ -1093,6 +1201,27 @@
       "observed": 0,
       "ok": true,
       "tolerance": 0
+    },
+    {
+      "expected": 11,
+      "name": "developers (EMSE 2023 Table 2)",
+      "observed": 11,
+      "ok": true,
+      "tolerance": 0
+    },
+    {
+      "expected": 15,
+      "name": "sessions (EMSE 2023 Table 2)",
+      "observed": 15,
+      "ok": true,
+      "tolerance": 0
+    },
+    {
+      "expected": 0,
+      "name": "OT/U-like tokens not matched by the code patterns",
+      "observed": 0,
+      "ok": true,
+      "tolerance": 0
     }
   ],
   "d2": {
@@ -1120,9 +1249,13 @@
               0.363636,
               0.923077
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.196078,
               0.115385
+            ],
+            "denominator_only_effect": [
+              -0.35,
+              -0.035088
             ],
             "numerator_effect": [
               0.0,
@@ -1130,7 +1263,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 17,
@@ -1142,7 +1282,8 @@
           "R0": 0.647059,
           "R0_prime": 0.529412,
           "R1": 0.692308,
-          "denominator_effect": -0.045249,
+          "conditioning_effect": -0.045249,
+          "denominator_only_effect": -0.162896,
           "numerator_effect": 0.117647
         },
         "unresolved_no_consult": 2,
@@ -1181,9 +1322,13 @@
               0.25,
               0.875
             ],
-            "denominator_effect": [
+            "conditioning_effect": [
               -0.247475,
               0.0625
+            ],
+            "denominator_only_effect": [
+              -0.311111,
+              -0.029167
             ],
             "numerator_effect": [
               0.0,
@@ -1191,7 +1336,14 @@
             ]
           },
           "replicates": 10000,
-          "undefined_replicates": 0
+          "undefined_replicates": {
+            "R0": 0,
+            "R0_prime": 0,
+            "R1": 0,
+            "conditioning_effect": 0,
+            "denominator_only_effect": 0,
+            "numerator_effect": 0
+          }
         },
         "counts": {
           "n": 17,
@@ -1203,7 +1355,8 @@
           "R0": 0.529412,
           "R0_prime": 0.470588,
           "R1": 0.615385,
-          "denominator_effect": -0.085973,
+          "conditioning_effect": -0.085973,
+          "denominator_only_effect": -0.144796,
           "numerator_effect": 0.058824
         },
         "unresolved_no_consult": 1,
@@ -1233,6 +1386,18 @@
     ]
   },
   "d2_gate": [
+    {
+      "expected": true,
+      "name": "values: resolved in {Y, N}",
+      "observed": true,
+      "ok": true
+    },
+    {
+      "expected": true,
+      "name": "values: Table 5 flags in {0, 1}",
+      "observed": true,
+      "ok": true
+    },
     {
       "expected": 17,
       "name": "tasks",
@@ -1330,6 +1495,12 @@
     {
       "expected": [],
       "name": "text-described tasks exist in Table 4",
+      "observed": [],
+      "ok": true
+    },
+    {
+      "expected": [],
+      "name": "text_external in_table5 agrees with Table 5",
       "observed": [],
       "ok": true
     }

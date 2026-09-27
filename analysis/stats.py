@@ -1,10 +1,26 @@
-"""Measures, Wilson intervals and a cluster bootstrap. Standard library only."""
+"""Measures, Wilson intervals and a cluster bootstrap. Standard library only.
+
+With a = resolved and no consultation, b = unresolved and no consultation,
+S = resolved, N = all:
+
+    R0 = (a + b) / N     R0' = a / N     R1 = a / S
+
+    R0 - R1 = (R0 - R0')  +  (R0' - R1)
+              numerator      denominator-only
+              effect = b/N   effect = a/N - a/S  (never positive)
+
+R0 - R1 changes numerator and denominator at once, so it is reported as the
+"conditioning effect" (restricting to resolved episodes), not as a denominator effect.
+"""
 
 from __future__ import annotations
 
 import math
 import random
 from dataclasses import dataclass
+
+MEASURES = ("R0", "R1", "R0_prime", "numerator_effect", "denominator_only_effect",
+            "conditioning_effect")
 
 
 @dataclass(frozen=True)
@@ -36,9 +52,9 @@ def measures_from_counts(c: dict) -> dict:
         "R0": r0,
         "R1": r1,
         "R0_prime": r0p,
-        # R0 - R0' == (unresolved AND no consultation) / all
-        "numerator_effect": r0 - r0p,
-        "denominator_effect": r0 - r1,
+        "numerator_effect": r0 - r0p,           # (unresolved AND no consultation) / all
+        "denominator_only_effect": r0p - r1,    # same numerator, all -> resolved
+        "conditioning_effect": r0 - r1,         # sum of the two above
     }
 
 
@@ -63,43 +79,43 @@ def percentile(sorted_vals: list[float], q: float) -> float:
     return sorted_vals[lo] + (h - lo) * (sorted_vals[hi] - sorted_vals[lo])
 
 
-def cluster_bootstrap(units: list[Unit], replicates: int, seed_label: str,
-                      level: float = 0.95) -> dict:
-    """Resample clusters (developers) with replacement; recompute every measure.
+def bootstrap_draws(units: list[Unit], replicates: int, seed_label: str) -> dict[str, list[float]]:
+    """Resample whole clusters (developers) with replacement; recompute every measure.
 
     `seed_label` is a string; `random.Random(str)` is deterministic across runs and
-    does not depend on PYTHONHASHSEED.
+    does not depend on PYTHONHASHSEED. A measure that is undefined in a replicate
+    (e.g. R1 when the replicate has no resolved unit) is dropped for that measure only.
     """
-    per_cluster: dict[str, dict] = {}
+    per_cluster: dict[str, list[Unit]] = {}
     for u in units:
         per_cluster.setdefault(u.cluster, []).append(u)
-    clusters = sorted(per_cluster)
-    tables = [counts(per_cluster[k]) for k in clusters]
+    tables = [counts(per_cluster[k]) for k in sorted(per_cluster)]
 
     rng = random.Random(seed_label)
-    draws: dict[str, list[float]] = {k: [] for k in
-                                     ("R0", "R1", "R0_prime", "numerator_effect", "denominator_effect")}
-    undefined = 0
+    draws: dict[str, list[float]] = {k: [] for k in MEASURES}
     for _ in range(replicates):
         agg = {"n": 0, "resolved": 0, "no_consult": 0, "resolved_no_consult": 0}
-        for _ in clusters:
+        for _ in tables:
             t = tables[rng.randrange(len(tables))]
             for key in agg:
                 agg[key] += t[key]
-        m = measures_from_counts(agg)
-        if any(math.isnan(v) for v in m.values()):
-            undefined += 1
-            continue
-        for key, v in m.items():
-            draws[key].append(v)
+        for key, v in measures_from_counts(agg).items():
+            if not math.isnan(v):
+                draws[key].append(v)
+    return draws
 
+
+def cluster_bootstrap(units: list[Unit], replicates: int, seed_label: str,
+                      level: float = 0.95) -> dict:
+    draws = bootstrap_draws(units, replicates, seed_label)
     alpha = (1 - level) / 2
-    out = {}
+    intervals, undefined = {}, {}
     for key, vals in draws.items():
         vals.sort()
-        out[key] = [percentile(vals, alpha), percentile(vals, 1 - alpha)]
-    return {"intervals": out, "clusters": len(clusters), "replicates": replicates,
-            "undefined_replicates": undefined}
+        intervals[key] = [percentile(vals, alpha), percentile(vals, 1 - alpha)]
+        undefined[key] = replicates - len(vals)
+    return {"intervals": intervals, "clusters": len({u.cluster for u in units}),
+            "replicates": replicates, "undefined_replicates": undefined}
 
 
 def summarise(units: list[Unit], replicates: int, seed_label: str, level: float) -> dict:

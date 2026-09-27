@@ -12,7 +12,8 @@
     "R1": "episodes ending with zero consultations / resolved episodes",
     "R0_prime": "resolved episodes with zero consultations / all episodes (outcome-requiring)",
     "numerator_effect": "R0 - R0_prime = share of all episodes that ended unresolved AND without consultation",
-    "denominator_effect": "R0 - R1"
+    "denominator_only_effect": "R0_prime - R1 (same numerator; denominator all -> resolved)",
+    "conditioning_effect": "R0 - R1 = numerator_effect + denominator_only_effect (was 'denominator_effect' before 2026-09-28 review; see NOTES.md Deviations)"
   },
   "d1": {
     "label": "Alaboudi & LaToza live-stream debugging episodes (public coding shared by the arXiv v1 and EMSE 2023 packages)",
@@ -72,15 +73,15 @@
   "d2": {
     "label": "Li & Coblenz FSE 2026 debugging tasks (paper tables only; CC BY 4.0)",
     "unit": "task",
-    "transcriptions": ["data/p434/transcription_a.csv", "data/p434/transcription_b.csv"],
-    "text_external": "data/p434/text_external.csv",
+    "transcriptions": ["data/li-coblenz-2026/transcription_a.csv", "data/li-coblenz-2026/transcription_b.csv"],
+    "text_external": "data/li-coblenz-2026/text_external.csv",
     "resolved": "resolved == 'Y'",
     "consultation": {
       "primary": "table5",
       "sensitivity": ["table5_plus_text"],
       "definitions": {
         "table5": "task listed in Table 5 under documentation OR social-technical sources OR web sources",
-        "table5_plus_text": "table5 OR task named in data/p434/text_external.csv (body text describes consulting people/issue reports during that task; the paper states screen actions such as search were not coded at a fine grain)"
+        "table5_plus_text": "table5 OR task named in data/li-coblenz-2026/text_external.csv (body text describes consulting people/issue reports during that task; the paper states screen actions such as search were not coded at a fine grain)"
       }
     },
     "cluster": "developer_id",

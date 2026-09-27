@@ -36,9 +36,13 @@ def compare(a: list[dict], b: list[dict]) -> list[str]:
     return diffs
 
 
-def read_text_external(path: Path) -> set[str]:
+def read_text_external_rows(path: Path) -> list[dict]:
     with path.open(encoding="utf-8", newline="") as f:
-        return {r["task_id"] for r in csv.DictReader(f)}
+        return [dict(r) for r in csv.DictReader(f)]
+
+
+def read_text_external(path: Path) -> set[str]:
+    return {r["task_id"] for r in read_text_external_rows(path)}
 
 
 def consulted(row: dict, mode: str, text_ids: set[str]) -> bool:
@@ -57,9 +61,12 @@ def _chk(name, observed, expected) -> dict:
     return {"name": name, "observed": observed, "expected": expected, "ok": observed == expected}
 
 
-def gate(rows: list[dict], text_ids: set[str], g: dict) -> list[dict]:
+def gate(rows: list[dict], text_ids: set[str], g: dict, text_rows: list[dict] | None = None) -> list[dict]:
     ids = [r["task_id"] for r in rows]
+    table5 = {r["task_id"]: any(r[c] == "1" for c in TABLE5_COLS) for r in rows}
     checks = [
+        _chk("values: resolved in {Y, N}", all(r["resolved"] in ("Y", "N") for r in rows), True),
+        _chk("values: Table 5 flags in {0, 1}", all(r[c] in ("0", "1") for r in rows for c in TABLE5_COLS), True),
         _chk("tasks", len(rows), g["tasks"]),
         _chk("unique task ids", len(set(ids)), g["tasks"]),
         _chk("developers", len({r["developer_id"] for r in rows}), g["developers"]),
@@ -82,4 +89,9 @@ def gate(rows: list[dict], text_ids: set[str], g: dict) -> list[dict]:
              all((r["group"] == "participant") == r["task_id"].startswith("P") for r in rows), True),
         _chk("text-described tasks exist in Table 4", sorted(text_ids - set(ids)), []),
     ]
+    if text_rows is not None:
+        # in_table5 in text_external.csv must agree with the transcription.
+        wrong = sorted(r["task_id"] for r in text_rows
+                       if r["task_id"] in table5 and (r["in_table5"] == "1") != table5[r["task_id"]])
+        checks.append(_chk("text_external in_table5 agrees with Table 5", wrong, []))
     return checks

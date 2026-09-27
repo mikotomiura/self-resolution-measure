@@ -50,13 +50,17 @@ def build_episodes(sessions: list, diag: dict | None = None, merge: bool = True)
     if diag is None:
         diag = {}
     for key in ("max_open_episodes", "orphan_resumes", "unresumed_interruptions",
-                "temporal_violations"):
+                "temporal_violations", "same_start_debugging_blocks"):
         diag.setdefault(key, 0)
 
     episodes: list[dict] = []
     for sess in sessions:
-        # The array order is not chronological in 6 of the 15 sessions.
-        anns = sorted(sess["annotations"], key=lambda a: span(a)[0])
+        # The array order is not chronological in 6 of the 15 sessions. Ties on the
+        # start time are broken by the end time so that the order never depends on
+        # the array order; the number of such ties is reported.
+        anns = sorted(sess["annotations"], key=lambda a: span(a))
+        starts = [span(a)[0] for a in anns if a["title"] == "Debugging"]
+        diag["same_start_debugging_blocks"] += len(starts) - len(set(starts))
         pending: list[dict] = []
         for ann in anns:
             if ann["title"] != "Debugging":
@@ -119,6 +123,24 @@ def episode_seconds(ep: dict) -> int:
     return sum(b["end"] - b["start"] for b in ep["blocks"])
 
 
+LOOSE_CODE = re.compile(r"(?<![A-Za-z])(?:OT|U)\s*-?\s*\d+")
+STRICT_CODE = re.compile(r"\b(?:OT|U)\d+\b")
+
+
+def code_token_misses(sessions: list) -> int:
+    """Sub-annotations whose OT/U-like tokens are not all matched by the strict patterns
+    used in `is_consult` (e.g. "OT-2", "OT 2", "OT2U1"). Must be 0, or the consultation
+    definitions silently miss codes."""
+    misses = 0
+    for sess in sessions:
+        for ann in sess["annotations"]:
+            for sub in ann.get("subAnnotations") or []:
+                desc = sub.get("description", "")
+                if len(LOOSE_CODE.findall(desc)) != len(STRICT_CODE.findall(desc)):
+                    misses += 1
+    return misses
+
+
 def to_units(episodes: list[dict], mode: str, resolved_codes: tuple[str, ...]) -> list[Unit]:
     return [Unit(cluster=ep["cluster"], resolved=is_resolved(ep, resolved_codes),
                  consulted=bool(consult_subs(ep, mode))) for ep in episodes]
@@ -138,7 +160,7 @@ def _val(spec) -> tuple[float, float]:
     return spec, 0
 
 
-def gate_v1(episodes: list[dict], diag: dict, g: dict) -> list[dict]:
+def gate_v1(episodes: list[dict], diag: dict, g: dict, sessions: list | None = None) -> list[dict]:
     n_act = sum(len(b["subs"]) for ep in episodes for b in ep["blocks"])
     per_ep = [sum(len(b["subs"]) for b in ep["blocks"]) for ep in episodes]
     committed = [ep for ep in episodes if is_committed(ep)]
@@ -177,6 +199,13 @@ def gate_v1(episodes: list[dict], diag: dict, g: dict) -> list[dict]:
     ]
     for key, want in g["merge_invariants"].items():
         checks.append(_chk("merge invariant: " + key, diag.get(key, -1), want, 0))
+    # Structural checks added after review (NOTES.md, Deviations): the EMSE 2023 paper's
+    # Table 2 lists 15 videos by 11 developers; code tokens must all be recognised.
+    checks.append(_chk("developers (EMSE 2023 Table 2)", len({e["cluster"] for e in episodes}), 11, 0))
+    if sessions is not None:
+        checks.append(_chk("sessions (EMSE 2023 Table 2)", len(sessions), 15, 0))
+        checks.append(_chk("OT/U-like tokens not matched by the code patterns",
+                           code_token_misses(sessions), 0, 0))
     return checks
 
 
@@ -204,7 +233,7 @@ def reproduce_emse(episodes: list[dict], spec: dict, short_n: int, long_n: int) 
         rows: list[dict] = []
         row(rows, "activities", n_act, str(n_act))
         top_share = sum(episode_seconds(e) for e in long_) / total
-        row(rows, "time_share_top23", top_share, f"{top_share:.3f}")
+        row(rows, "time_share_top23", top_share, f"{top_share:.4f}")
         has = {id(e): bool(consult_subs(e, mode)) for e in episodes}
 
         for key, group in (("episodes_with_consult", episodes), ("committed_with_consult", committed),

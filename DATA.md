@@ -1,13 +1,13 @@
 # Data provenance
 
-No raw data is committed to this repository. `raw/` is git-ignored; `run.sh` refuses to run unless the inputs match the SHA-256 values below.
+No raw data is committed to this repository. `raw/` is git-ignored; `run.sh` refuses to run unless the D1 input matches the SHA-256 values below. The D2 transcriptions are tracked files; their hashes are recorded in `results/provenance.txt`.
 
 ## D1 — Alaboudi & LaToza, live-streamed debugging episodes
 
 | | |
 |---|---|
 | Papers | arXiv:2105.02162v1 (2021) and its journal version, *Empirical Software Engineering* 28:117 (2023), doi:10.1007/s10664-023-10352-5 |
-| Licence | CC BY 4.0 (shown on both figshare item pages) |
+| Licence | CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ (shown on both figshare item pages) |
 | Coding | 15 sessions, 11 developers, 89 debugging episodes. The first author coded the whole dataset; two authors calibrated on 20 episodes / 166 activities (Cohen's kappa 75% / 84%, per the papers). |
 
 Two replication packages are linked from the two versions of the paper. **Their `rowData.json` and codebook are byte-identical** (checked 2026-09-28):
@@ -24,7 +24,7 @@ Two replication packages are linked from the two versions of the paper. **Their 
 | `Observe-devOnlineDataSetLink.txt` | `a3e63be1fbfdb9fc53174903d05bf1f417faf5fc3927137f9938a819aa712683` | yes | yes |
 | `interviews .pdf` (43,886 B; interview study of the EMSE version) | `2594cbc5eacc48facecc97bc46b616cda349e7406f40487bc01ea9493da9f9e0` | no | yes |
 
-The EMSE version reports recounted figures (2135 activities; consultation in 33% of episodes) that are **not** in either package; `run.sh` reports how far each figure can be reproduced from the shared public coding (see `results/report.md`).
+The EMSE version reports different figures for the same episodes (2135 activities; consultation in 33% of episodes). We could not derive all of them from the shared coding under any of the four consultation rules we examined, and we could not determine how they were obtained; `run.sh` reports how far each figure can be reproduced from the shared public coding (see `results/report.md`).
 
 The dataset site named in both papers (`observe-dev.online`) no longer resolves (NXDOMAIN, checked 2026-09-06). figshare is the only surviving source and serves only through private links, which are not indexed by the figshare API or search.
 
@@ -44,7 +44,7 @@ The data contain per-session URLs of public videos and repositories. Outputs of 
 |---|---|
 | Paper | *Proc. ACM Softw. Eng.* 3(FSE), Article FSE049 (2026), doi:10.1145/3797077; arXiv:2602.11435v3 |
 | Licence | CC BY 4.0 (stated on the first page of the paper) |
-| What is used | Table 4 (task, time, `Resolved`) and Table 5 (debugging techniques × task), transcribed by hand; three sentences of body text (`data/p434/text_external.csv`) |
+| What is used | Table 4 (task, time, `Resolved`) and Table 5 (debugging techniques × task), transcribed twice, independently, with an LLM-based assistant (see `data/li-coblenz-2026/README.md`); three sentences of body text (`data/li-coblenz-2026/text_external.csv`) |
 | PDF used for transcription | arXiv:2602.11435v3, 911,582 B, SHA-256 `4b3ba562ae43c845dcba37845503cd199a79a781b8bb5670991793785352337f` (identical when downloaded on 2026-09-27 and 2026-09-28) |
 
 The authors' supplementary spreadsheets on GitHub are **not** used: that repository carries no licence.

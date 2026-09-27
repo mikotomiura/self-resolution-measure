@@ -2,3 +2,7 @@ raw/
 __pycache__/
 *.pyc
 results/.tmp/
+# never commit source data, even outside raw/
+*.zip
+rowData.json
+*.pdf
