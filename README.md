@@ -28,6 +28,12 @@ bash run.sh
 
 Outputs: `results/metrics.json`, `results/report.md`.
 
+## Licence
+
+- Code (`analysis/`, `run.sh`): Apache License 2.0 ([LICENSE](LICENSE)).
+- Data derived here (`data/`, `results/`) and documentation: CC BY 4.0 ([LICENSE-DATA](LICENSE-DATA)).
+- Third-party sources keep their own licences and must be attributed: the Alaboudi & LaToza replication packages (CC BY 4.0; not redistributed here) and the Li & Coblenz paper (CC BY 4.0; its tables are transcribed in `data/p434/`, see [data/p434/README.md](data/p434/README.md)).
+
 ## Layout
 
 | Path | What |
