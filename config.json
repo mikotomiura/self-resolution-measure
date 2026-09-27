@@ -1,0 +1,104 @@
+{
+  "_comment": "Analysis definitions frozen BEFORE the main results were computed (see NOTES.md, 'Freeze'). Changing anything here after the freeze is a deviation and must be logged in NOTES.md with the pre-change values.",
+  "seed_file": "SEED",
+  "bootstrap": {
+    "replicates": 10000,
+    "resampling_unit": "developer",
+    "interval": "percentile",
+    "level": 0.95
+  },
+  "measures": {
+    "R0": "episodes ending with zero consultations / all episodes (outcome-agnostic)",
+    "R1": "episodes ending with zero consultations / resolved episodes",
+    "R0_prime": "resolved episodes with zero consultations / all episodes (outcome-requiring)",
+    "numerator_effect": "R0 - R0_prime = share of all episodes that ended unresolved AND without consultation",
+    "denominator_effect": "R0 - R1"
+  },
+  "d1": {
+    "label": "Alaboudi & LaToza live-stream debugging episodes (public coding shared by the arXiv v1 and EMSE 2023 packages)",
+    "input": "raw/rowData.json",
+    "input_sha256": "497df0b4da398c39cc0fd8b28544d4ac1d61c728708f4f9cdaa32469acda78b9",
+    "episode": {
+      "top_level_title": "Debugging",
+      "sort_annotations_by_start_time": true,
+      "merge_resumed_blocks": "a block whose start code is DF7 continues the most recent episode that ended with DF4, within the same session"
+    },
+    "resolved": {
+      "primary": ["DF1"],
+      "sensitivity": [["DF1", "DF2"]]
+    },
+    "consultation": {
+      "primary": "strict",
+      "sensitivity": ["u", "ot2", "ot2u"],
+      "definitions": {
+        "strict": "sub-annotation title == 'Seeking information'",
+        "u": "strict OR (title == 'Others' AND description has a U code)",
+        "ot2": "strict OR (title == 'Others' AND description has OT2 = issue tracker)",
+        "ot2u": "strict OR (title == 'Others' AND description has OT2 or a U code)"
+      },
+      "rationale": "strict was fixed on 2026-09-06 by matching three independent statistics of the v1 paper (Table 4/5). The other three were added on 2026-09-28 because the EMSE 2023 version defines 'Consult resources' to include the issue tracker; their R values were seen once while identifying that rule (disclosed in NOTES.md). All four are reported."
+    },
+    "cluster": "developer = project (githubURL); the EMSE 2023 paper (Table 2) maps the 15 videos to 11 developers on 11 projects",
+    "strata": "origin: committed (first block has DF8) vs fresh (otherwise)",
+    "short_long_quartile": {"short_n": 22, "long_n": 23},
+    "gate_v1": {
+      "_source": "arXiv:2105.02162v1; all 12 items passed on 2026-09-06",
+      "episodes": 89,
+      "debug_activities": {"value": 2137, "tolerance": 1},
+      "activities_per_episode_avg": {"value": 24, "tolerance": 0.5},
+      "origin_committed": 10,
+      "origin_fresh": 79,
+      "unresolved_rate_committed": {"value": 0.50, "tolerance": 0.005},
+      "unresolved_rate_fresh": {"value": 0.14, "tolerance": 0.005},
+      "consult_count_range": [0, 16],
+      "consult_time_share_mean": {"value": 0.03, "tolerance": 0.005},
+      "consult_time_share_max": {"value": 0.59, "tolerance": 0.005},
+      "consult_seconds_per_instance_mean": {"value": 35, "tolerance": 1.0},
+      "merge_invariants": {"max_open_episodes": 1, "orphan_resumes": 0, "unresumed_interruptions": 0, "temporal_violations": 0}
+    },
+    "reproduce_emse2023": {
+      "_note": "Reported figures of the EMSE 2023 version, checked against the same public data under each consultation definition. NOT a gate: mismatches are results.",
+      "activities": {"value": 2135, "kind": "count"},
+      "episodes_with_consult": {"value": 0.33, "kind": "rate_of_all", "quote": "occurring in only 33% of debugging episodes"},
+      "committed_with_consult": {"value": 1.0, "kind": "rate_of_committed", "quote": "Consulting resources occurred in all committed debugging episodes"},
+      "fresh_with_consult": {"value": 0.15, "kind": "rate_of_fresh", "quote": "but only 15% of fresh debugging episodes"},
+      "developers_with_consult": {"value": 0.91, "kind": "rate_of_developers", "quote": "91% of developers consulted external resources at least once"},
+      "short_with_consult": {"value": 0.0, "kind": "rate_of_short", "quote": "Developers did not consult resources in any of the short episodes"},
+      "long_with_consult": {"value": 0.74, "kind": "rate_of_long", "quote": "Consulting resources occurred during 74% of long episodes"},
+      "time_share_top23": {"value": 0.79, "kind": "time_share", "quote": "79% of the total episodes' time stemming from 23 episodes"},
+      "rounding_tolerance": 0.005
+    }
+  },
+  "d2": {
+    "label": "Li & Coblenz FSE 2026 debugging tasks (paper tables only; CC BY 4.0)",
+    "unit": "task",
+    "transcriptions": ["data/p434/transcription_a.csv", "data/p434/transcription_b.csv"],
+    "text_external": "data/p434/text_external.csv",
+    "resolved": "resolved == 'Y'",
+    "consultation": {
+      "primary": "table5",
+      "sensitivity": ["table5_plus_text"],
+      "definitions": {
+        "table5": "task listed in Table 5 under documentation OR social-technical sources OR web sources",
+        "table5_plus_text": "table5 OR task named in data/p434/text_external.csv (body text describes consulting people/issue reports during that task; the paper states screen actions such as search were not coded at a fine grain)"
+      }
+    },
+    "cluster": "developer_id",
+    "gate": {
+      "tasks": 17,
+      "developers": 12,
+      "participants_tasks": 11,
+      "streamer_tasks": 6,
+      "resolved_Y": 13,
+      "resolved_N": 4,
+      "unresolved_ids": ["P4TA", "S3TA", "S4TB", "S5TA"],
+      "table5_documentation": 3,
+      "table5_social_technical": 2,
+      "table5_web_sources": 3,
+      "participant_minutes": {"value": 468, "_source": "Sec. 4: 'seven participants (P1-P7) working on 11 debugging tasks totaling 7.8 hours'"}
+    },
+    "report_only": {
+      "streamer_hours": {"value": 3.1, "_source": "Sec. 4: 'five streamers (S1-S5) who worked on six debugging tasks over 3.1 hours' (compared with the Table 4 sum; not a gate)"}
+    }
+  }
+}
