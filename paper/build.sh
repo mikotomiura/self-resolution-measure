@@ -90,7 +90,7 @@ fi
 echo "Step 3: LaTeX"
 TEC="${TECTONIC:-$(command -v tectonic || true)}"
 [ -n "$TEC" ] || { echo "tectonic not found (set TECTONIC=/path/to/tectonic)" >&2; exit 1; }
-"$TEC" --version > build.log 2>&1
+"$TEC" --version > build.log 2>&1 || { echo "cannot run $TEC --version" >&2; cat build.log >&2; exit 1; }
 # Remove old logs first: the checks below must read this run's log, never an earlier one.
 rm -f main.log main.blg
 "$TEC" -X compile --keep-logs main.tex >> build.log 2>&1 || { tail -30 build.log >&2; exit 1; }
@@ -101,7 +101,8 @@ if grep -E "(Citation|Reference) .* undefined|There were undefined (references|c
   grep -E "(Citation|Reference) .* undefined" main.log >&2 || true
   echo "undefined citations or references" >&2; exit 1
 fi
-if [ -f main.blg ] && grep -E "^Warning--" main.blg > /dev/null; then
+[ -s main.blg ] || { echo "main.blg was not produced; cannot check the bibliography" >&2; exit 1; }
+if grep -E "^Warning--" main.blg > /dev/null; then
   grep -E "^Warning--" main.blg >&2; echo "BibTeX warnings (incomplete or malformed entries in refs.bib)" >&2; exit 1
 fi
 if grep -E "^! " main.log > /dev/null; then

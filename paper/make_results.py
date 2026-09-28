@@ -38,7 +38,10 @@ GATE_ITEMS = {"episodes": "episodes", "debugging activities": "activities",
 # this script produces itself. Anything else stops the run (no escaping guesswork).
 KEY_RE = re.compile(r"[A-Za-z0-9/.-]+")
 PLAIN_RE = re.compile(r"[A-Za-z0-9 ,./()+-]+")
+# Plain values that would print wrongly: missing/non-finite numbers and a raw hyphen as minus.
+BAD_PLAIN_RE = re.compile(r"(?i)\s*(none|null|nan|[+-]?inf(inity)?|n/a)\s*|-[0-9.].*")
 TEX_RE = re.compile(r"(\\ensuremath\{-\})?[0-9]+(\.[0-9]+)?(\\%)?|\\rep(ok|no)|[0-9]+(\{,\}[0-9]{3})+")
+END_CODES = ("DF2", "DF3", "DF5")   # outcome codes an unresolved episode can end with (DF4 is merged)
 
 
 class ClaimError(SystemExit):
@@ -49,13 +52,19 @@ def signed(text: str) -> str:
     return "\\ensuremath{-}" + text[1:] if text.startswith("-") else text
 
 
-def pct(x: float, digits: int = 1) -> str:
-    return signed(f"{100 * x:.{digits}f}")
+def number(x, what: str = "value") -> float:
+    if x is None or isinstance(x, bool) or not isinstance(x, (int, float)) or x != x or x in (float("inf"), float("-inf")):
+        raise SystemExit(f"{what}: not a finite number: {x!r}")
+    return x
 
 
-def shown(x: float) -> float:
+def pct(x, digits: int = 1) -> str:
+    return signed(f"{100 * number(x):.{digits}f}")
+
+
+def shown(x) -> float:
     """The value as printed (one decimal, in percent); claims are judged on it."""
-    return float(f"{100 * x:.1f}")
+    return float(f"{100 * number(x):.1f}")
 
 
 def ratio(k: int, n: int, what: str) -> float:
@@ -75,7 +84,8 @@ def build(m: dict) -> list[tuple[str, str]]:
         value = str(value)
         if not KEY_RE.fullmatch(key):
             raise SystemExit(f"key not allowed: {key!r}")
-        if not (PLAIN_RE.fullmatch(value) or TEX_RE.fullmatch(value)):
+        plain_ok = PLAIN_RE.fullmatch(value) and not BAD_PLAIN_RE.fullmatch(value)
+        if not (plain_ok or TEX_RE.fullmatch(value)):
             raise SystemExit(f"value not allowed for {key}: {value!r}")
         out.append((key, value))
 
@@ -107,6 +117,8 @@ def build(m: dict) -> list[tuple[str, str]]:
         n, res, free, a = c["n"], c["resolved"], c["no_consult"], c["resolved_no_consult"]
         bb = r["unresolved_no_consult"]
         unres = n - res
+        if not (0 <= a <= res <= n and a <= free <= n and 0 <= bb <= unres):
+            raise SystemExit(f"{prefix}: inconsistent counts {c} (unresolved_no_consult {bb})")
         if bb != free - a:
             raise SystemExit(f"{prefix}: unresolved_no_consult {bb} != {free} - {a}")
         for k, v in (("n", n), ("S", res), ("U", unres), ("free", free), ("a", a), ("b", bb),
@@ -131,7 +143,10 @@ def build(m: dict) -> list[tuple[str, str]]:
         if by_code is not None:
             if sum(by_code.values()) != bb:
                 raise SystemExit(f"{prefix}: end-code breakdown {by_code} does not add up to {bb}")
-            for code in ("DF2", "DF3", "DF5"):
+            unexpected = sorted(set(by_code) - set(END_CODES))
+            if unexpected:
+                raise SystemExit(f"{prefix}: unexpected end codes {unexpected} (the text names DF2, DF3, DF5 only)")
+            for code in END_CODES:
                 put(f"{prefix}/bcode/{code}", by_code.get(code, 0))
 
     d1 = m["d1"]
@@ -207,7 +222,7 @@ def claims(m: dict, put) -> None:
     # Conditioning effect: printed point estimate negative and printed interval containing 0.
     if not all(shown(point(r, "conditioning_effect")) < 0 for r in cells):
         fail("every conditioning-effect point estimate is negative")
-    if not all(shown(ivl(r, "conditioning_effect")[0]) < 0 < shown(ivl(r, "conditioning_effect")[1])
+    if not all(shown(ivl(r, "conditioning_effect")[0]) <= 0 <= shown(ivl(r, "conditioning_effect")[1])
                for r in cells):
         fail("every conditioning-effect interval contains 0")
     ce = sorted(point(r, "conditioning_effect") for r in cells)
@@ -220,8 +235,10 @@ def claims(m: dict, put) -> None:
     # Numerator effect: D1 printed lower ends above 0; D2 lower ends print as 0.0.
     if not all(shown(ivl(r, "numerator_effect")[0]) > 0 for r in d1.values()):
         fail("every D1 numerator-effect interval lies above 0")
-    if not all(shown(ivl(r, "numerator_effect")[0]) == 0.0 for r in d2.values()):
+    if not all(number(ivl(r, "numerator_effect")[0]) == 0 for r in d2.values()):
         fail("every D2 numerator-effect interval starts at 0")
+    if not all(number(r["p_replicate_without_numerator_units"]) > 0.025 for r in d2.values()):
+        fail("in D2 the probability of a replicate without such tasks is above 2.5%")
     ne = sorted(point(r, "numerator_effect") for r in d1.values())
     put("d1/ne/min", pct(ne[0]))
     put("d1/ne/max", pct(ne[-1]))
@@ -330,16 +347,31 @@ def selftest(m: dict) -> int:
     """Each mutation must stop build(); the unmodified metrics must pass."""
     failures = []
 
-    def expect_stop(name, mutate):
+    def expect_stop(name, mutate, reason):
+        """The mutation must stop build() for the intended reason, not for another one."""
         mm = copy.deepcopy(m)
         mutate(mm)
         try:
             build(mm)
         except SystemExit as e:
-            print(f"  [PASS] {name} -- stopped: {e}")
+            if reason in str(e):
+                print(f"  [PASS] {name} -- stopped: {e}")
+            else:
+                print(f"  [FAIL] {name} -- stopped for another reason: {e}")
+                failures.append(name)
             return
         print(f"  [FAIL] {name} -- not stopped")
         failures.append(name)
+
+    def expect_pass(name, mutate):
+        mm = copy.deepcopy(m)
+        mutate(mm)
+        try:
+            build(mm)
+            print(f"  [PASS] {name} -- passes")
+        except SystemExit as e:
+            print(f"  [FAIL] {name} -- stopped: {e}")
+            failures.append(name)
 
     def res(mm, ds, key):
         return mm[ds]["results"][key]
@@ -358,27 +390,78 @@ def selftest(m: dict) -> int:
     except SystemExit as e:
         print(f"  [FAIL] unmodified metrics stopped: {e}")
         failures.append("unmodified")
+    def ivl(mm, ds, key, measure):
+        return res(mm, ds, key)["cluster_bootstrap"]["intervals"][measure]
+
+    def strata(mm, origin):
+        return mm["d1"]["strata_by_origin"]["strict"][origin]
+
+    expect_pass("conditioning-effect interval with an upper end printing as 0.0",
+                lambda mm: ivl(mm, "d1", "strict|DF1", "conditioning_effect").__setitem__(1, 0.0004))
     expect_stop("conditioning effect made positive",
-                lambda mm: res(mm, "d2", "table5")["point"].__setitem__("conditioning_effect", 0.01))
+                lambda mm: res(mm, "d2", "table5")["point"].__setitem__("conditioning_effect", 0.01),
+                "point estimate is negative")
+    expect_stop("conditioning-effect interval excluding 0",
+                lambda mm: ivl(mm, "d1", "u|DF1", "conditioning_effect").__setitem__(1, -0.001),
+                "interval contains 0")
     expect_stop("D1 numerator-effect lower end printing as 0.0",
-                lambda mm: res(mm, "d1", "strict|DF1")["cluster_bootstrap"]["intervals"]
-                ["numerator_effect"].__setitem__(0, 0.0004))
+                lambda mm: ivl(mm, "d1", "strict|DF1", "numerator_effect").__setitem__(0, 0.0004),
+                "D1 numerator-effect interval lies above 0")
     expect_stop("denominator-only upper end printing as -0.0",
-                lambda mm: res(mm, "d1", "u|DF1")["cluster_bootstrap"]["intervals"]
-                ["denominator_only_effect"].__setitem__(1, -0.0003))
+                lambda mm: ivl(mm, "d1", "u|DF1", "denominator_only_effect").__setitem__(1, -0.0003),
+                "denominator-only-effect interval lies below 0")
+    expect_stop("D2 numerator-effect lower end above 0",
+                lambda mm: ivl(mm, "d2", "table5", "numerator_effect").__setitem__(0, 0.001),
+                "D2 numerator-effect interval starts at 0")
     expect_stop("D2 table and table+text on different n",
-                lambda mm: res(mm, "d2", "table5")["counts"].__setitem__("n", 30))
-    expect_stop("D2 p0 rounded to 0",
-                lambda mm: res(mm, "d2", "table5").__setitem__("p_replicate_without_numerator_units", 0.0))
-    expect_stop("empty gate list", setp(["d2_gate"], []))
+                lambda mm: res(mm, "d2", "table5")["counts"].__setitem__("n", 30),
+                "halves the D2 numerator effect")
+    expect_stop("D2 p0 below 2.5%",
+                lambda mm: res(mm, "d2", "table5").__setitem__("p_replicate_without_numerator_units", 0.0),
+                "above 2.5%")
+    expect_stop("D2 p0 not of the form ((K-k)/K)^K",
+                lambda mm: res(mm, "d2", "table5").__setitem__("p_replicate_without_numerator_units", 0.2),
+                "identifies one k")
+    expect_stop("empty gate list", setp(["d2_gate"], []), "no checks recorded")
     expect_stop("value with a TeX special character",
-                lambda mm: mm["d1"]["reproduce_emse2023"]["strict"]["rows"][2].__setitem__("observed_text", "19%89"))
-    expect_stop("zero resolved units (a share would be n/a)",
-                lambda mm: res(mm, "d2", "table5_plus_text")["counts"].__setitem__("resolved", 0))
+                lambda mm: mm["d1"]["reproduce_emse2023"]["strict"]["rows"][2].__setitem__("observed_text", "19%89"),
+                "value not allowed")
+    expect_stop("value that would print a hyphen as a minus sign",
+                lambda mm: mm["d1"]["reproduce_emse2023"]["strict"]["rows"][2].__setitem__("observed_text", "-3.4"),
+                "value not allowed")
+    expect_stop("inconsistent counts (more resolved-unconsulted than resolved)",
+                lambda mm: res(mm, "d2", "table5_plus_text")["counts"].__setitem__("resolved", 0),
+                "inconsistent counts")
+    expect_stop("zero resolved units (a share would be undefined)",
+                lambda mm: res(mm, "d2", "table5_plus_text").__setitem__(
+                    "counts", {"n": 17, "resolved": 0, "no_consult": 1, "resolved_no_consult": 0}),
+                "denominator is 0")
+    expect_stop("undefined point estimate (null in metrics.json)",
+                lambda mm: res(mm, "d2", "table5_plus_text")["point"].__setitem__("R1", None),
+                "not a finite number")
     expect_stop("end-code breakdown not adding up",
-                lambda mm: res(mm, "d1", "strict|DF1")["unresolved_no_consult_by_code"].__setitem__("DF3", 7))
+                lambda mm: res(mm, "d1", "strict|DF1")["unresolved_no_consult_by_code"].__setitem__("DF3", 7),
+                "does not add up")
+    expect_stop("unexpected end code",
+                lambda mm: res(mm, "d1", "strict|DF1").__setitem__(
+                    "unresolved_no_consult_by_code", {"DF2": 1, "DF3": 8, "none": 1}),
+                "unexpected end codes")
+    expect_stop("DF3 no longer the majority",
+                lambda mm: res(mm, "d1", "strict|DF1").__setitem__(
+                    "unresolved_no_consult_by_code", {"DF2": 5, "DF3": 4, "DF5": 1}),
+                "most unresolved, unconsulted episodes end with DF3")
+    expect_stop("committed reversal larger than one episode",
+                lambda mm: strata(mm, "committed").__setitem__("consulted_among_unresolved", [2, 5]),
+                "difference of a single episode")
+    expect_stop("fresh stratum reversing the pooled direction",
+                lambda mm: strata(mm, "fresh").__setitem__("consulted_among_unresolved", [1, 11]),
+                "fresh (strict)")
+    expect_stop("D2 table+text effects no longer far apart",
+                lambda mm: res(mm, "d2", "table5_plus_text")["point"].__setitem__("denominator_only_effect", -0.08),
+                "much smaller than the denominator-only effect")
     expect_stop("committed figure reproduced without issue-tracker activities",
-                lambda mm: mm["d1"]["reproduce_emse2023"]["strict"]["rows"][3].__setitem__("match", True))
+                lambda mm: mm["d1"]["reproduce_emse2023"]["strict"]["rows"][3].__setitem__("match", True),
+                "only with issue-tracker activities")
     print(f"make_results selftest: {'OK' if not failures else str(len(failures)) + ' FAILED'}")
     return 1 if failures else 0
 
