@@ -33,9 +33,8 @@
 
 \title[Outcome-agnostic self-resolution measures]{When ``no help'' is not ``solved'': outcome-agnostic self-resolution measures in two public debugging datasets}
 
-%% PLACEHOLDER: author, e-mail and affiliation (or city and country) to be confirmed by the author.
-\author*[1]{\fnm{[Given name]} \sur{[Family name]}}\email{[e-mail]}
-\affil*[1]{\orgaddress{\city{[City]}, \country{[Country]}}}
+\author*[1]{\fnm{Mikoto} \sur{Miura}}\email{mmiura.network@gmail.com}
+\affil*[1]{\orgaddress{\city{Hiroshima}, \country{Japan}}}
 
 \abstract{Observational studies of debugging report how often developers consult documentation, the web or other people. The complement, debugging without consultation, is easily read as problems resolved without help. That reading requires every unit without consultation to end in a fix. In two public, human-coded datasets of professional debugging, however, an episode ends when the defect is fixed or when the developer stops, and in one of them also when observation ends. We define an outcome-agnostic measure (\Rz: units without consultation over all units), an outcome-requiring measure (\Rzp: resolved units without consultation over all units) and a resolution-conditional measure (\Ro: the same numerator over resolved units), and decompose their differences exactly. In \R{d1/strict/DF1/n} episodes from \R{d1/developers} developers, \Rz{} exceeded \Rzp{} by \R{d1/strict/DF1/ne} percentage points (developer-level bootstrap 95\% interval \R{d1/strict/DF1/ne/lo} to \R{d1/strict/DF1/ne/hi}), and by \R{d1/ne/min} to \R{d1/ne/max} points across eight operational definitions. In \R{d2/table5/n} tasks from \R{d2/developers} developers the difference was \R{d2/table5/ne} points from the paper's tables and \R{d2/text/ne} points when consultations described only in its text were added; both intervals started at 0. In the first dataset, restricting to resolved episodes changed the measure by only \R{d1/strict/DF1/ce} points, because a positive numerator effect and a negative denominator-only effect largely cancelled. The journal version's consultation figures for the first dataset could not all be reproduced from its shared coding under any of four definitions examined. We recommend reporting both measures and the unresolved, unconsulted share separately.}
 
@@ -191,7 +190,6 @@ A single script reproduces the analysis. It verifies the SHA-256 hash of the inp
 \subsection{Use of large language models}\label{sec:llm}
 
 An LLM-based coding assistant (Anthropic Claude) was used in four ways. (1) Coding of D2: the two transcriptions of the D2 tables, and the identification of the consultations described only in the body text, were produced by two separate instances of the assistant. One was the session that also ran the analysis and read text extracted from the PDF; the other was given only the PDF, without access to the first transcription or to the analysis. Because both instances come from the same model, their agreement guards against slips but not against a shared misreading, which is why the transcriptions were also checked against totals in the paper and by the author against the PDF. (2) The assistant wrote most of the analysis code under the author's direction; the checks described in Sect.~\ref{sec:checks} were designed to catch errors in that code. (3) Literature: assistant instances searched for the sources used in Sect.~\ref{sec:related} and~\ref{sec:method} and read them in full where the text could be obtained, otherwise from the abstract or the bibliographic record only (for example, the reanalysis by \citet{tantithamthavorn2016} is described here only as the reply by \citet{shepperd2018reply} reports it). The assistant checked every quotation in this paper against the text extracted from its source; the author checked the quotations from D2 against the PDF. (4) The assistant drafted and revised this manuscript. The author is responsible for the content.
-%% PLACEHOLDER: the author should confirm this description of LLM use before submission.
 
 %% ===================================================================================
 \section{Results}\label{sec:results}
@@ -373,16 +371,13 @@ In two public datasets of professional debugging, the share of episodes or tasks
 \section*{Statements and Declarations}
 
 \bmhead{Funding}
-%% PLACEHOLDER: to be confirmed by the author.
-[To be confirmed by the author.]
+The author did not receive support from any organization for the submitted work.
 
 \bmhead{Competing interests}
-%% PLACEHOLDER: to be confirmed by the author.
-[To be confirmed by the author.]
+The author has no relevant financial or non-financial interests to disclose.
 
 \bmhead{Ethics approval and consent to participate}
-%% PLACEHOLDER: to be confirmed by the author.
-This study is a secondary analysis of published, openly licensed data and publications; no data were collected from human participants for this study. [To be confirmed by the author.]
+Not applicable. This study is a secondary analysis of published, openly licensed data and publications; no data were collected from human participants for this study.
 
 \bmhead{Consent for publication}
 Not applicable.
@@ -394,8 +389,7 @@ The coded data of D1 are available from the replication packages of \citet{alabo
 The analysis code (Python standard library only) and the script that builds this manuscript from the results are part of the same replication package, released under the Apache License 2.0.
 
 \bmhead{Author contributions}
-%% PLACEHOLDER: to be confirmed by the author.
-[To be confirmed by the author.]
+Mikoto Miura is the sole author and was responsible for the conception of the study, the analysis and the writing of the manuscript. The use of an LLM-based assistant is described in Sect.~\ref{sec:llm}.
 
 \bibliography{refs}
 
