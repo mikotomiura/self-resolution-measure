@@ -11,6 +11,9 @@ S = resolved, N = all:
 
 R0 - R1 changes numerator and denominator at once, so it is reported as the
 "conditioning effect" (restricting to resolved episodes), not as a denominator effect.
+The signs hold when N > 0 and S > 0; with S = 0, R1 and both effects involving it are
+undefined. The order (numerator first) keeps every intermediate quantity a proportion:
+changing the denominator first would give (a + b) / S, which can exceed 1.
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from dataclasses import dataclass
 
 MEASURES = ("R0", "R1", "R0_prime", "numerator_effect", "denominator_only_effect",
             "conditioning_effect")
+INTERVAL = "percentile"   # config.json bootstrap.interval (type-7 order statistics)
 
 
 @dataclass(frozen=True)
@@ -122,9 +126,14 @@ def summarise(units: list[Unit], replicates: int, seed_label: str, level: float)
     c = counts(units)
     m = measures_from_counts(c)
     unresolved_free = c["no_consult"] - c["resolved_no_consult"]
+    k = len({u.cluster for u in units if not u.resolved and not u.consulted})
+    K = len({u.cluster for u in units})
     return {
         "counts": c,
         "unresolved_no_consult": unresolved_free,
+        # Probability that a cluster-bootstrap replicate contains no unresolved,
+        # unconsulted unit at all (so its numerator effect is exactly 0).
+        "p_replicate_without_numerator_units": ((K - k) / K) ** K if K else float("nan"),
         "point": m,
         "wilson95": {
             "R0": wilson(c["no_consult"], c["n"]),

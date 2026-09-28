@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import d1  # noqa: E402
 import d2  # noqa: E402
 from stats import (Unit, counts, measures_from_counts, cluster_bootstrap,  # noqa: E402
-                   bootstrap_draws, summarise)
+                   bootstrap_draws, summarise, MEASURES, INTERVAL)
 
 ROOT = Path(__file__).resolve().parent.parent
 RESOLVED_SETS = {"DF1": ("DF1",), "DF1+DF2": ("DF1", "DF2")}
@@ -46,10 +46,17 @@ def check_config(cfg: dict) -> list[str]:
         problems.append("d1 consultation modes differ from config")
     if list(d2.CONSULT_MODES) != [c2["consultation"]["primary"]] + c2["consultation"]["sensitivity"]:
         problems.append("d2 consultation modes differ from config")
-    if c1["episode"]["top_level_title"] != "Debugging":
+    if c1["episode"]["top_level_title"] != d1.TOP_LEVEL_TITLE:
         problems.append("episode top-level title differs from config")
-    if (b["resampling_unit"], b["interval"]) != ("developer", "percentile"):
-        problems.append("bootstrap unit / interval differ from config")
+    if b["interval"] != INTERVAL:
+        problems.append("bootstrap interval differs from config")
+    if b["resampling_unit"] != "developer" or d1.CLUSTER_KEY not in c1["cluster"] \
+            or c2["cluster"] != d2.CLUSTER_COLUMN:
+        problems.append("cluster keys differ from config")
+    if c2["resolved"] != f"resolved == '{d2.RESOLVED_VALUE}'":
+        problems.append("d2 resolved rule differs from config")
+    if set(cfg["measures"]) != set(MEASURES):
+        problems.append("measure names differ from config")
     return problems
 
 
@@ -267,6 +274,11 @@ def selftest(cfg: dict, seed: str, sessions: list) -> int:
     expect("normal: D2 gate green", all(c["ok"] for c in d2.gate(rows_a, text_ids, c2["gate"], text_rows)))
     red = [c["name"] for c in d2.gate(tampered, text_ids, c2["gate"], text_rows) if not c["ok"]]
     expect("broken: flipped Resolved -> D2 gate red", bool(red), f"{len(red)} red")
+    flipped_text = copy.deepcopy(text_rows)
+    flipped_text[0]["in_table5"] = "1" if flipped_text[0]["in_table5"] == "0" else "0"
+    red = [c["name"] for c in d2.gate(rows_a, text_ids, c2["gate"], flipped_text) if not c["ok"]]
+    expect("broken: in_table5 disagreeing with Table 5 -> D2 gate red",
+           "text_external in_table5 agrees with Table 5" in red)
     odd = copy.deepcopy(rows_a)
     odd[0]["web_sources"] = "yes"
     red = [c["name"] for c in d2.gate(odd, text_ids, c2["gate"], text_rows) if not c["ok"]]
@@ -296,6 +308,8 @@ def selftest(cfg: dict, seed: str, sessions: list) -> int:
     m = measures_from_counts(counts(d1.to_units(eps, "strict", ("DF1",))))
     expect("negative: nothing unresolved -> numerator effect 0, R0 == R0'",
            m["numerator_effect"] == 0 and m["R0"] == m["R0_prime"])
+    expect("negative: nothing unresolved -> denominator-only and conditioning effects 0",
+           m["denominator_only_effect"] == 0 and m["conditioning_effect"] == 0)
 
     print("Bootstrap")
     one = [Unit("only", r, c) for r, c in [(True, False)] * 6 + [(False, False)] * 2 + [(True, True)] * 2]
@@ -312,6 +326,8 @@ def selftest(cfg: dict, seed: str, sessions: list) -> int:
     expect("whole clusters are resampled (R0 draws in {0, 0.1, 1})", r0 == {0.0, 0.1, 1.0}, str(sorted(r0)))
     # Clusters of different sizes and consultation shares, so that R0 varies across replicates.
     many = [Unit(f"c{k}", True, j < k // 2) for k in range(1, 8) for j in range(k)]
+    expect("same seed label -> identical draws (within a run; run.sh Step 3 checks across runs)",
+           bootstrap_draws(many, 300, "x") == bootstrap_draws(many, 300, "x"))
     expect("different seed labels -> different draws",
            bootstrap_draws(many, 300, "x")["R0"] != bootstrap_draws(many, 300, "y")["R0"])
     none_resolved = [Unit("A", False, False), Unit("B", True, True)]
@@ -335,8 +351,9 @@ def ci(pair) -> str:
 
 def result_rows(results: dict) -> list[str]:
     lines = ["| definition | n | R0 | R1 | R0′ | numerator effect R0 − R0′ (bootstrap 95%) "
-             "| denominator-only effect R0′ − R1 (bootstrap 95%) | conditioning effect R0 − R1 (bootstrap 95%) |",
-             "|---|---|---|---|---|---|---|---|"]
+             "| denominator-only effect R0′ − R1 (bootstrap 95%) | conditioning effect R0 − R1 (bootstrap 95%) "
+             "| ((K − k)/K)^K |",
+             "|---|---|---|---|---|---|---|---|---|"]
     for key, r in results.items():
         c, p, bi = r["counts"], r["point"], r["cluster_bootstrap"]["intervals"]
         lines.append(
@@ -345,7 +362,8 @@ def result_rows(results: dict) -> list[str]:
             f"| {pct(p['R0_prime'])} ({c['resolved_no_consult']}/{c['n']}) "
             f"| **{pct(p['numerator_effect'])}** ({r['unresolved_no_consult']}/{c['n']}) {ci(bi['numerator_effect'])} "
             f"| {pct(p['denominator_only_effect'])} {ci(bi['denominator_only_effect'])} "
-            f"| {pct(p['conditioning_effect'])} {ci(bi['conditioning_effect'])} |")
+            f"| {pct(p['conditioning_effect'])} {ci(bi['conditioning_effect'])} "
+            f"| {pct(r['p_replicate_without_numerator_units'])}% |")
     return lines
 
 
@@ -354,11 +372,12 @@ def write_report(path: Path, m: dict) -> None:
          "Generated by `run.sh`. Percentages; bootstrap intervals resample developers "
          f"({m['bootstrap']['replicates']} replicates, seed `{m['seed']}`).",
          "R0 − R1 = (R0 − R0′) + (R0′ − R1): the conditioning effect is the sum of the numerator effect "
-         "and the denominator-only effect.",
+         "and the denominator-only effect. Percentages are rounded independently, so the three may not "
+         "add up in the last digit.",
          "With only 11 (D1) or 12 (D2) developers, percentile cluster-bootstrap intervals tend to cover "
-         "less than the nominal 95%; read them as a lower bound on uncertainty. A D2 interval reaching 0 "
-         "means that about (10/12)^12 ≈ 11% of replicates draw neither developer with an unresolved, "
-         "unconsulted task.", ""]
+         "less than the nominal 95%; read them as a lower bound on uncertainty. The last column of each "
+         "table, ((K − k)/K)^K, is the share of replicates that draw none of the k developers with an "
+         "unresolved, unconsulted unit; when it exceeds 2.5% the numerator-effect interval starts at 0.", ""]
     L += ["## Gates", ""]
     for name in ("d1_gate_v1", "d2_gate"):
         ok = sum(c["ok"] for c in m[name])

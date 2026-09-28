@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# One-command reproduction. Stops (exit != 0) if an input hash, a gate, a self-test,
-# the determinism check or the comparison with the committed results fails.
+# One-command reproduction. Stops (exit != 0) if an input hash, a gate, a self-test, the
+# determinism check or the comparison with the bundled results/ fails (cmp; no git needed).
 # Standard-library Python 3.11+ only.
 #
-#   bash run.sh                          # reproduce; results must equal the committed ones
+#   bash run.sh                          # reproduce; results must equal the bundled ones
 #   ALLOW_RESULT_CHANGE=1 bash run.sh    # after an intended change to code or data
 set -euo pipefail
 
@@ -69,30 +69,34 @@ echo "  ok"
 echo "Step 1: self-test (gates must bite; controls must recover known values)"
 "$PY" analysis/analyze.py --selftest
 
-echo "Step 2: analysis"
-PYTHONHASHSEED=0 "$PY" analysis/analyze.py --out results
+echo "Step 2: analysis (written to results/.new first; the bundled results are not touched yet)"
+rm -rf results/.new results/.tmp
+PYTHONHASHSEED=0 "$PY" analysis/analyze.py --out results/.new
 
 echo "Step 3: determinism (a second run with another hash seed must be byte-identical)"
-rm -rf results/.tmp
 PYTHONHASHSEED=1 "$PY" analysis/analyze.py --out results/.tmp > /dev/null
-cmp results/metrics.json results/.tmp/metrics.json
-cmp results/report.md results/.tmp/report.md
+cmp results/.new/metrics.json results/.tmp/metrics.json
+cmp results/.new/report.md results/.tmp/report.md
 rm -rf results/.tmp
 echo "  ok"
 
-echo "Step 4: compare with the committed results"
-if git rev-parse --is-inside-work-tree > /dev/null 2>&1 && git ls-files --error-unmatch results/metrics.json > /dev/null 2>&1; then
-  if git diff --quiet -- results/metrics.json results/report.md; then
-    echo "  ok (identical to the committed results)"
+echo "Step 4: compare with the bundled results (works without git)"
+if [ -f results/metrics.json ] && [ -f results/report.md ]; then
+  if cmp -s results/.new/metrics.json results/metrics.json && cmp -s results/.new/report.md results/report.md; then
+    echo "  ok (identical to the bundled results)"
   elif [ "${ALLOW_RESULT_CHANGE:-0}" = "1" ]; then
-    echo "  CHANGED (allowed by ALLOW_RESULT_CHANGE=1):"; git diff --stat -- results/metrics.json results/report.md
+    echo "  CHANGED (allowed by ALLOW_RESULT_CHANGE=1); replacing the bundled results"
   else
-    echo "results differ from the committed version (git diff results/). Set ALLOW_RESULT_CHANGE=1 only after an intended change." >&2
+    echo "results differ from the bundled results/ (compare results/.new/ with results/)." >&2
+    echo "Set ALLOW_RESULT_CHANGE=1 only after an intended change." >&2
     exit 1
   fi
 else
-  echo "  skipped (not a git checkout with committed results)"
+  echo "  no bundled results; using this run"
 fi
+mv -f results/.new/metrics.json results/metrics.json
+mv -f results/.new/report.md results/report.md
+rm -rf results/.new
 
 echo "Step 5: provenance"
 {

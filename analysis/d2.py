@@ -14,6 +14,8 @@ COLUMNS = ["task_id", "developer_id", "group", "task_time_min", "resolved",
            "documentation", "social_technical", "web_sources", "table4_page", "table5_page"]
 TABLE5_COLS = ("documentation", "social_technical", "web_sources")
 CONSULT_MODES = ("table5", "table5_plus_text")
+CLUSTER_COLUMN = "developer_id"   # config.json d2.cluster
+RESOLVED_VALUE = "Y"              # config.json d2.resolved
 
 
 def read_rows(path: Path) -> list[dict]:
@@ -53,7 +55,7 @@ def consulted(row: dict, mode: str, text_ids: set[str]) -> bool:
 
 
 def to_units(rows: list[dict], mode: str, text_ids: set[str]) -> list[Unit]:
-    return [Unit(cluster=r["developer_id"], resolved=r["resolved"] == "Y",
+    return [Unit(cluster=r[CLUSTER_COLUMN], resolved=r["resolved"] == RESOLVED_VALUE,
                  consulted=consulted(r, mode, text_ids)) for r in rows]
 
 
@@ -94,4 +96,6 @@ def gate(rows: list[dict], text_ids: set[str], g: dict, text_rows: list[dict] | 
         wrong = sorted(r["task_id"] for r in text_rows
                        if r["task_id"] in table5 and (r["in_table5"] == "1") != table5[r["task_id"]])
         checks.append(_chk("text_external in_table5 agrees with Table 5", wrong, []))
+        checks.append(_chk("values: text_external in_table5 in {0, 1}",
+                           all(r["in_table5"] in ("0", "1") for r in text_rows), True))
     return checks

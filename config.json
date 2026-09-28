@@ -9,7 +9,7 @@
   },
   "measures": {
     "R0": "episodes ending with zero consultations / all episodes (outcome-agnostic)",
-    "R1": "episodes ending with zero consultations / resolved episodes",
+    "R1": "resolved episodes with zero consultations / resolved episodes (numerator restricted to resolved as well; before 2026-09-28 review the wording was ambiguous, see NOTES.md Deviations 6)",
     "R0_prime": "resolved episodes with zero consultations / all episodes (outcome-requiring)",
     "numerator_effect": "R0 - R0_prime = share of all episodes that ended unresolved AND without consultation",
     "denominator_only_effect": "R0_prime - R1 (same numerator; denominator all -> resolved)",

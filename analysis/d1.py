@@ -21,6 +21,8 @@ DF_CODE = re.compile(r"DF(\d+)")
 U_CODE = re.compile(r"\bU\d+\b")
 OT_CODE = re.compile(r"\bOT(\d+)\b")
 
+TOP_LEVEL_TITLE = "Debugging"   # config.json d1.episode.top_level_title
+CLUSTER_KEY = "githubURL"       # config.json d1.cluster: developer = project
 SEEKING = "Seeking information"
 OTHERS = "Others"
 DF_FIX_YES, DF_FIX_MOSTLY = 1, 2
@@ -56,14 +58,15 @@ def build_episodes(sessions: list, diag: dict | None = None, merge: bool = True)
     episodes: list[dict] = []
     for sess in sessions:
         # The array order is not chronological in 6 of the 15 sessions. Ties on the
-        # start time are broken by the end time so that the order never depends on
-        # the array order; the number of such ties is reported.
+        # start time are broken by the end time; blocks with identical (start, end)
+        # would keep their array order (stable sort). Same-start debugging blocks are
+        # counted and reported (0 in this dataset).
         anns = sorted(sess["annotations"], key=lambda a: span(a))
-        starts = [span(a)[0] for a in anns if a["title"] == "Debugging"]
+        starts = [span(a)[0] for a in anns if a["title"] == TOP_LEVEL_TITLE]
         diag["same_start_debugging_blocks"] += len(starts) - len(set(starts))
         pending: list[dict] = []
         for ann in anns:
-            if ann["title"] != "Debugging":
+            if ann["title"] != TOP_LEVEL_TITLE:
                 continue
             codes = {int(x) for x in DF_CODE.findall(ann.get("description", ""))}
             start, end = span(ann)
@@ -77,7 +80,7 @@ def build_episodes(sessions: list, diag: dict | None = None, merge: bool = True)
             else:
                 if merge and DF_RESUME in codes:
                     diag["orphan_resumes"] += 1
-                episode = {"session": sess["id"], "cluster": sess["githubURL"], "blocks": [block]}
+                episode = {"session": sess["id"], "cluster": sess[CLUSTER_KEY], "blocks": [block]}
                 episodes.append(episode)
             if merge and DF_INTERRUPTED in codes:
                 pending.append(episode)
@@ -123,7 +126,7 @@ def episode_seconds(ep: dict) -> int:
     return sum(b["end"] - b["start"] for b in ep["blocks"])
 
 
-LOOSE_CODE = re.compile(r"(?<![A-Za-z])(?:OT|U)\s*-?\s*\d+")
+LOOSE_CODE = re.compile(r"(?<![A-Za-z])(?:OT|U)\s*-?\s*\d+", re.I)
 STRICT_CODE = re.compile(r"\b(?:OT|U)\d+\b")
 
 

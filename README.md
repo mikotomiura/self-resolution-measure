@@ -5,7 +5,7 @@ How far does an **outcome-agnostic** self-resolution measure drift from an **out
 | Measure | Definition |
 |---|---|
 | R0 | episodes that ended with no consultation of external resources / all episodes |
-| R1 | episodes that ended with no consultation / resolved episodes |
+| R1 | resolved episodes that ended with no consultation / resolved episodes |
 | R0′ | resolved episodes with no consultation / all episodes |
 | numerator effect | R0 − R0′ = episodes that ended **unresolved and without consultation** / all episodes |
 | denominator-only effect | R0′ − R1 (same numerator; denominator all → resolved) |
@@ -25,7 +25,7 @@ Both are CC BY 4.0. No raw data is committed; see [DATA.md](DATA.md) for sources
 bash run.sh
 ```
 
-`run.sh` checks input hashes, runs the self-test (the gates must turn red on absent or broken input, the consultation rules must match a truth table, and synthetic controls must recover known values), runs the analysis, runs it a second time under another hash seed and requires byte-identical output, requires the output to equal the committed `results/` (unless `ALLOW_RESULT_CHANGE=1`), and records hashes of every input and script in `results/provenance.txt`.
+`run.sh` checks input hashes, runs the self-test (the gates must turn red on absent or broken input, the consultation rules must match a truth table, and synthetic controls must recover known values), runs the analysis, runs it a second time under another hash seed and requires byte-identical output, requires the output to equal the bundled `results/` (compared with `cmp`, so it also works without git; set `ALLOW_RESULT_CHANGE=1` only after an intended change), and records hashes of every input and script in `results/provenance.txt`.
 
 Outputs: `results/metrics.json`, `results/report.md`.
 

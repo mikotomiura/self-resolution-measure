@@ -346,6 +346,7 @@
           "resolved": 73,
           "resolved_no_consult": 53
         },
+        "p_replicate_without_numerator_units": 0.000171,
         "point": {
           "R0": 0.685393,
           "R0_prime": 0.595506,
@@ -419,6 +420,7 @@
           "resolved": 75,
           "resolved_no_consult": 54
         },
+        "p_replicate_without_numerator_units": 0.001272,
         "point": {
           "R0": 0.685393,
           "R0_prime": 0.606742,
@@ -492,6 +494,7 @@
           "resolved": 73,
           "resolved_no_consult": 54
         },
+        "p_replicate_without_numerator_units": 0.000171,
         "point": {
           "R0": 0.696629,
           "R0_prime": 0.606742,
@@ -565,6 +568,7 @@
           "resolved": 75,
           "resolved_no_consult": 55
         },
+        "p_replicate_without_numerator_units": 0.001272,
         "point": {
           "R0": 0.696629,
           "R0_prime": 0.617978,
@@ -638,6 +642,7 @@
           "resolved": 73,
           "resolved_no_consult": 60
         },
+        "p_replicate_without_numerator_units": 1.5e-05,
         "point": {
           "R0": 0.786517,
           "R0_prime": 0.674157,
@@ -711,6 +716,7 @@
           "resolved": 75,
           "resolved_no_consult": 61
         },
+        "p_replicate_without_numerator_units": 0.000171,
         "point": {
           "R0": 0.786517,
           "R0_prime": 0.685393,
@@ -784,6 +790,7 @@
           "resolved": 73,
           "resolved_no_consult": 59
         },
+        "p_replicate_without_numerator_units": 1.5e-05,
         "point": {
           "R0": 0.775281,
           "R0_prime": 0.662921,
@@ -857,6 +864,7 @@
           "resolved": 75,
           "resolved_no_consult": 60
         },
+        "p_replicate_without_numerator_units": 0.000171,
         "point": {
           "R0": 0.775281,
           "R0_prime": 0.674157,
@@ -1278,6 +1286,7 @@
           "resolved": 13,
           "resolved_no_consult": 9
         },
+        "p_replicate_without_numerator_units": 0.112157,
         "point": {
           "R0": 0.647059,
           "R0_prime": 0.529412,
@@ -1351,6 +1360,7 @@
           "resolved": 13,
           "resolved_no_consult": 8
         },
+        "p_replicate_without_numerator_units": 0.351996,
         "point": {
           "R0": 0.529412,
           "R0_prime": 0.470588,
@@ -1502,6 +1512,12 @@
       "expected": [],
       "name": "text_external in_table5 agrees with Table 5",
       "observed": [],
+      "ok": true
+    },
+    {
+      "expected": true,
+      "name": "values: text_external in_table5 in {0, 1}",
+      "observed": true,
       "ok": true
     }
   ],
