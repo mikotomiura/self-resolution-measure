@@ -24,6 +24,7 @@ With only 11 (D1) or 12 (D2) developers, percentile cluster-bootstrap intervals 
 | ot2u|DF1+DF2 | 89 | 68.5 (61/89) | 72.0 (54/75) | 60.7 (54/89) | **7.9** (7/89) [3.4, 11.7] | -11.3 [-17.8, -4.6] | -3.5 [-10.1, 1.9] | 0.1% |
 
 Outcome codes at episode end: DF1 73, DF2 2, DF3 12, DF5 2.
+Unresolved, unconsulted episodes by outcome code: strict|DF1: DF2 1, DF3 8, DF5 1; strict|DF1+DF2: DF3 8, DF5 1; u|DF1: DF2 1, DF3 8, DF5 1; u|DF1+DF2: DF3 8, DF5 1; ot2|DF1: DF2 1, DF3 6, DF5 1; ot2|DF1+DF2: DF3 6, DF5 1; ot2u|DF1: DF2 1, DF3 6, DF5 1; ot2u|DF1+DF2: DF3 6, DF5 1.
 Diagnostics: same_start_debugging_blocks = 0, zero_length_episodes = 0.
 
 ### By defect origin (resolved = DF1)

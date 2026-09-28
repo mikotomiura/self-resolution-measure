@@ -96,8 +96,15 @@ def run_d1(cfg: dict, seed: str, sessions: list) -> tuple[dict, list[dict]]:
     for mode in d1.CONSULT_MODES:
         for rlabel, rcodes in RESOLVED_SETS.items():
             units = d1.to_units(episodes, mode, rcodes)
-            results[f"{mode}|{rlabel}"] = summarise(units, boot["replicates"],
-                                                     f"{seed}:d1:{mode}:{rlabel}", boot["level"])
+            summary = summarise(units, boot["replicates"], f"{seed}:d1:{mode}:{rlabel}", boot["level"])
+            # Added after the 2026-09-28 manuscript review (NOTES.md, Deviations 7): which
+            # outcome codes end the unresolved, unconsulted episodes. Descriptive only.
+            by_code = _outcome_codes([e for e in episodes
+                                      if not d1.is_resolved(e, rcodes) and not d1.consult_subs(e, mode)])
+            if sum(by_code.values()) != summary["unresolved_no_consult"]:
+                raise SystemExit(f"{mode}|{rlabel}: end-code breakdown does not add up")
+            summary["unresolved_no_consult_by_code"] = by_code
+            results[f"{mode}|{rlabel}"] = summary
     out = {
         "primary": f"{c1['consultation']['primary']}|DF1",
         "results": results,
@@ -389,6 +396,9 @@ def write_report(path: Path, m: dict) -> None:
           f"{d['developers']}; primary `{d['primary']}`)", ""]
     L += result_rows(d["results"]) + [""]
     L += ["Outcome codes at episode end: " + ", ".join(f"{k} {v}" for k, v in d["outcome_codes"].items()) + ".",
+          "Unresolved, unconsulted episodes by outcome code: "
+          + "; ".join(f"{key}: " + ", ".join(f"{k} {v}" for k, v in r["unresolved_no_consult_by_code"].items())
+                      for key, r in d["results"].items()) + ".",
           "Diagnostics: " + ", ".join(f"{k} = {v}" for k, v in d["diagnostics"].items()) + ".", ""]
     L += ["### By defect origin (resolved = DF1)", "",
           "| consultation | origin | n | consulted among resolved | consulted among unresolved | R0 − R0′ |",

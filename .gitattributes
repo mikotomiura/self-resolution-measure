@@ -1,0 +1,4 @@
+*.sh text eol=lf
+*.py text eol=lf
+paper/*.tex text eol=lf
+paper/*.bib text eol=lf

@@ -356,6 +356,11 @@
           "numerator_effect": 0.089888
         },
         "unresolved_no_consult": 8,
+        "unresolved_no_consult_by_code": {
+          "DF2": 1,
+          "DF3": 6,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.582955,
@@ -430,6 +435,10 @@
           "numerator_effect": 0.078652
         },
         "unresolved_no_consult": 7,
+        "unresolved_no_consult_by_code": {
+          "DF3": 6,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.582955,
@@ -504,6 +513,11 @@
           "numerator_effect": 0.089888
         },
         "unresolved_no_consult": 8,
+        "unresolved_no_consult_by_code": {
+          "DF2": 1,
+          "DF3": 6,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.594629,
@@ -578,6 +592,10 @@
           "numerator_effect": 0.078652
         },
         "unresolved_no_consult": 7,
+        "unresolved_no_consult_by_code": {
+          "DF3": 6,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.594629,
@@ -652,6 +670,11 @@
           "numerator_effect": 0.11236
         },
         "unresolved_no_consult": 10,
+        "unresolved_no_consult_by_code": {
+          "DF2": 1,
+          "DF3": 8,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.690472,
@@ -726,6 +749,10 @@
           "numerator_effect": 0.101124
         },
         "unresolved_no_consult": 9,
+        "unresolved_no_consult_by_code": {
+          "DF3": 8,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.690472,
@@ -800,6 +827,11 @@
           "numerator_effect": 0.11236
         },
         "unresolved_no_consult": 10,
+        "unresolved_no_consult_by_code": {
+          "DF2": 1,
+          "DF3": 8,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.678226,
@@ -874,6 +906,10 @@
           "numerator_effect": 0.101124
         },
         "unresolved_no_consult": 9,
+        "unresolved_no_consult_by_code": {
+          "DF3": 8,
+          "DF5": 1
+        },
         "wilson95": {
           "R0": [
             0.678226,

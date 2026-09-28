@@ -31,8 +31,10 @@ Outputs: `results/metrics.json`, `results/report.md`.
 
 ## Licence
 
-- Code (`analysis/`, `run.sh`): Apache License 2.0 ([LICENSE](LICENSE)).
-- Data derived here (`data/`, `results/`), `config.json` and documentation: CC BY 4.0 ([LICENSE-DATA](LICENSE-DATA)). Sentences quoted from third-party papers (in `config.json`, `results/` and `data/`) are quotations and remain under their original terms.
+- Code (`analysis/`, `run.sh`, `paper/build.sh`, `paper/make_results.py`): Apache License 2.0 ([LICENSE](LICENSE)).
+- Data derived here (`data/`, `results/`, `paper/results.tex`), `config.json` and documentation: CC BY 4.0 ([LICENSE-DATA](LICENSE-DATA)). Sentences quoted from third-party papers (in `config.json`, `results/` and `data/`) are quotations and remain under their original terms.
+- The manuscript (`paper/main.tex`, `paper/refs.bib`) is **not** covered by either licence; its terms will be set when it is submitted and posted as a preprint.
+- The Springer Nature template files (`sn-jnl.cls`, `sn-basic.bst`) are not redistributed; `paper/build.sh` downloads the publisher's package and checks its SHA-256.
 - Third-party sources keep their own licences and must be attributed: the Alaboudi & LaToza replication packages (CC BY 4.0; not redistributed here) and the Li & Coblenz paper (CC BY 4.0; its tables are transcribed in `data/li-coblenz-2026/`, see [data/li-coblenz-2026/README.md](data/li-coblenz-2026/README.md)).
 
 ## Layout
@@ -45,4 +47,4 @@ Outputs: `results/metrics.json`, `results/report.md`.
 | `ENV.md` | Environment |
 | `analysis/` | `d1.py` (episode extraction, gate, EMSE 2023 reproduction), `d2.py` (transcriptions, gate), `stats.py` (measures, Wilson, cluster bootstrap), `analyze.py` (entry point) |
 | `data/li-coblenz-2026/` | Two independent (LLM-assisted) transcriptions of the Li & Coblenz tables, and three quoted sentences used in a sensitivity analysis |
-| `paper/` | Manuscript (`main.tex`, `refs.bib`). `bash paper/build.sh` fetches the Springer Nature template (hash-checked, not redistributed), regenerates `results.tex` from `results/metrics.json` and requires it to equal the committed one, and builds `main.pdf` with Tectonic. Every analysis number in the text is taken from `results.tex` |
+| `paper/` | Manuscript (`main.tex`, `refs.bib`). `bash paper/build.sh` fetches the Springer Nature template (hash-checked, not redistributed), regenerates `results.tex` from `results/metrics.json` and requires it to equal the committed one, and builds `main.pdf` with Tectonic (developed with 0.17.0; it fetches TeX packages over the network on first use). Every analysis number in the text is taken from `results.tex`; qualitative statements in the text are checked by `make_results.py` (`--selftest` shows that the checks stop on falsified metrics) |
