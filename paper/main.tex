@@ -1,0 +1,402 @@
+%% Manuscript for Empirical Software Engineering (Springer Nature LaTeX template v3.1, sn-basic
+%% author-year style). Build: bash paper/build.sh. Every number that comes from the analysis is
+%% written as \R{<key>} and defined in results.tex, which build.sh regenerates from
+%% ../results/metrics.json and compares byte for byte.
+
+\documentclass[pdflatex,sn-basic]{sn-jnl}
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{xurl}% long URLs in the reference list may break at any character
+
+\input{results}
+\newcommand{\R}[1]{\ifcsname r@#1\endcsname\csname r@#1\endcsname\else\errmessage{results.tex: unknown key #1}\fi}
+\newcommand{\CI}[1]{[\R{#1/lo}, \R{#1/hi}]}
+\newcommand{\WCI}[1]{[\R{#1/wlo}, \R{#1/whi}]}
+\newcommand{\repok}{\ensuremath{\checkmark}}
+\newcommand{\repno}{\ensuremath{\times}}
+\newcommand{\Rz}{\ensuremath{R_0}}
+\newcommand{\Rzp}{\ensuremath{R_0'}}
+\newcommand{\Ro}{\ensuremath{R_1}}
+\newcommand{\pp}{\,pp}
+
+\raggedbottom
+
+\begin{document}
+
+\title[Outcome-agnostic self-resolution measures]{When ``no help'' is not ``solved'': outcome-agnostic self-resolution measures in two public debugging datasets}
+
+%% PLACEHOLDER: author, e-mail and affiliation (or city and country) to be confirmed by the author.
+\author*[1]{\fnm{[Given name]} \sur{[Family name]}}\email{[e-mail]}
+\affil*[1]{\orgaddress{\city{[City]}, \country{[Country]}}}
+
+\abstract{Observational studies of debugging report how often developers consult external resources such as documentation, the web or other people. The complement, debugging without consultation, is easily read as problems resolved without help. That reading requires every unit to end in a fix. In two public, human-coded datasets of professional debugging, however, an episode ends when the defect is fixed or when the developer stops, and in one of them also when observation ends. We define an outcome-agnostic measure (\Rz: units without consultation over all units), an outcome-requiring measure (\Rzp: resolved units without consultation over all units) and a resolution-conditional measure (\Ro: the same numerator over resolved units), and decompose their differences exactly. In \R{d1/strict/DF1/n} episodes from \R{d1/developers} developers, \Rz{} exceeded \Rzp{} by \R{d1/strict/DF1/ne} percentage points (developer-level bootstrap 95\% interval \R{d1/strict/DF1/ne/lo} to \R{d1/strict/DF1/ne/hi}), and by \R{d1/ne/min} to \R{d1/ne/max} points across eight operational definitions. In \R{d2/table5/n} tasks from \R{d2/developers} developers the difference was \R{d2/table5/ne} points from the paper's tables and \R{d2/text/ne} points when consultations described only in its text were added; both intervals started at 0. Restricting to resolved episodes moved the measure by only \R{d1/strict/DF1/ce} points, because a positive numerator effect and a negative denominator-only effect largely cancelled. The journal version's consultation figures for the first dataset could not all be reproduced from its shared coding under any of four definitions examined. We recommend reporting both measures, and the share of units that ended unresolved without consultation, separately.}
+
+\keywords{Debugging, Help seeking, Measurement, Construct validity, Reanalysis, Reproducibility}
+
+\maketitle
+
+%% ===================================================================================
+\section{Introduction}\label{sec:intro}
+
+Observational studies of debugging code what developers do while they locate and repair a defect, including the moments when they leave the development environment to consult documentation, web resources or other people \citep{alaboudi2021,alaboudi2023,li2026}. A common summary of such data is how often consultation occurs. In a study of professional developers working on open source projects, for example, consulting resources ``was the least common activity, occurring in only 33\% of debugging episodes'' \citep{alaboudi2023}.
+
+The complement of such a figure invites a different reading: the episodes without consultation look like problems that the developer resolved without outside help. That reading is attractive whenever published observational data are reused as a reference point, for instance for how often developers get through a defect unaided. Whether it holds depends on how a unit of analysis ends. In the study above, ``debugging episodes end when the incorrect output that triggered the episode is resolved and the program produces the expected output, or when the developer explicitly states that they have stopped debugging'' \citep{alaboudi2023}. In a more recent study, a streamer's episode ends with ``either the streamer's announcement that they gave up or had to continue another time, or the issue and related issues triggered in the process of debugging are fixed'', and some tasks were not resolved ``within the study period'' \citep{li2026}. An episode without consultation may therefore be one that the developer fixed alone, or one that the developer abandoned, postponed or did not finish before observation ended. Counting all of them as unaided resolution treats ``no help'' as ``solved''.
+
+The underlying point is not new. Research on help seeking has long held that ``the degree of need for help may not be directly inferred from the absence of help seeking'' \citep{karabenick2011}, and a study of help requests in an introductory programming course re-read a low request rate by conditioning on whether submissions had failed \citep{hellas2023}. The original debugging studies, moreover, report consultation descriptively and do not present its complement as a measure of self-resolution. What we did not find, within the literature search described in Sect.~\ref{sec:related}, is an estimate of how large the difference between ``no consultation'' and ``resolved without consultation'' is in debugging data, and of how it depends on the operational choices that such data require.
+
+This paper reanalyses two public, human-coded datasets of professional debugging: the debugging episodes of \citet{alaboudi2021,alaboudi2023} (D1) and the debugging tasks of \citet{li2026} (D2). We define three measures over units of analysis (episodes in D1, tasks in D2): an outcome-agnostic measure \Rz{} (units without consultation, over all units), an outcome-requiring measure \Rzp{} (units that were resolved without consultation, over all units) and a resolution-conditional measure \Ro{} (units that were resolved without consultation, over resolved units). Their differences decompose exactly (Sect.~\ref{sec:measures}). We ask four research questions:
+
+\begin{itemize}
+\item[\textbf{RQ1}] How far does the outcome-agnostic measure \Rz{} exceed the outcome-requiring measure \Rzp{} in the two datasets?
+\item[\textbf{RQ2}] How sensitive are the measures and their difference to the operational definitions of consultation and resolution, and what does restricting to resolved units (\Ro) change?
+\item[\textbf{RQ3}] Is the association between outcome and consultation in D1 confounded by the origin of the defect?
+\item[\textbf{RQ4}] To what extent can the reported consultation figures be reproduced from the shared data and tables?
+\end{itemize}
+
+The contributions are (i) an exact decomposition that states what each of the three measures counts; (ii) estimates of the difference \Rz{}~$-$~\Rzp{} in two independent public datasets, with developer-level intervals; (iii) its sensitivity to the definitions of consultation and resolution, together with an explanation of why restricting to resolved episodes barely moves the measure; (iv) an item-by-item check of the consultation figures reported for D1 against its shared coding; and (v) reporting recommendations and a replication package that reproduces every number in this paper with one command. We do not claim that \Rz{} is a new measure (its complement is the consultation rate that the original authors report), that the absence of help seeking is uninformative about need (a known point in help-seeking research), or that conditioning on outcome is a new idea (it has been done before; Sect.~\ref{sec:related}).
+
+Section~\ref{sec:related} reviews related work, Sect.~\ref{sec:measures} defines the measures, Sect.~\ref{sec:data} and \ref{sec:method} describe the data and the analysis, Sect.~\ref{sec:results} reports the results, Sect.~\ref{sec:discussion} discusses them, Sect.~\ref{sec:threats} discusses threats to validity and Sect.~\ref{sec:conclusion} concludes.
+
+%% ===================================================================================
+\section{Background and related work}\label{sec:related}
+
+\subsection{Observational studies of debugging episodes}
+
+\citet{alaboudi2021} introduced the \emph{debugging episode} as the unit of analysis for observational data on debugging and coded episodes and activities in live-streamed programming videos of professional developers working on open source projects. The journal version of the study \citep{alaboudi2023} describes the same 11 developers, 15 videos and 89 episodes, defines an episode as the time ``from when a developer first investigates a defect until when the defect is fixed or the developer stops'', and distinguishes six activities, one of which is consulting resources. The two versions report different consultation figures for the same episodes: consultation occurred in 21\% of episodes in the preprint \citep{alaboudi2021} and in 33\% in the journal version \citep{alaboudi2023}; both report that 91\% of developers consulted external resources at least once. The journal version also reports that consulting resources ``occurred in all committed debugging episodes, but only 15\% of fresh debugging episodes'', where committed defects are those reported in an issue tracker and fresh defects are those that arise while the developer is working \citep{alaboudi2023}.
+
+\citet{li2026} built a grounded theory of debugging from observations of seven professional developers working on 11 debugging tasks and from recordings of five streamers working on six tasks. They report, for each task, whether it was resolved and which debugging techniques were used; three of the techniques in their codebook concern sources outside the code: documentation, social-technical sources (``Seek help from knowledgeable parties'') and web sources (``Seek help from web resources and AI'').
+
+Neither study presents the share of episodes or tasks without consultation as a measure of self-resolution. Our concern is with how that share behaves when it is reused as one.
+
+\subsection{Not asking for help is not the same as not needing it}
+
+In research on self-regulated help seeking, not asking questions can mean that students do not need to ask, that they understand too little to formulate a question, or that they understand enough but are embarrassed to ask; \citet{karabenick2011} conclude that ``the degree of need for help may not be directly inferred from the absence of help seeking''. \citet{hellas2023} observed that only 0.7\% of submissions in a programming course had an associated help request, checked whether this was because most submissions were correct, and found that students asked for help with only 1.3\% of the failed submissions; they conditioned a help-seeking rate on the outcome, as \Ro{} does. \citet{almeda2017} related help avoidance in an intelligent tutoring system to learning outcomes. These studies concern learners and the need for help. The present paper concerns professional debugging and the resolution of the defect, and quantifies how much of an outcome-agnostic ``no help'' share consists of units that were not resolved.
+
+\subsection{Composite outcomes, competing events and censoring}
+
+Clinical trial methodology separates events that change the meaning of an outcome from the end of observation. The ICH E9 (R1) addendum distinguishes intercurrent events, such as discontinuation of treatment, from administrative censoring, which is to be handled as a missing-data problem; it states that ``it is not necessary to use the same strategy to address all intercurrent events'', and that when an intercurrent event is scored as a failure in a composite variable, the scores ``should meaningfully reflect the lack of benefit to the patient'' \citep{ich2020e9r1}. A systematic review of cardiovascular trials found that composite end points whose components differ in importance and frequency can give misleading impressions of the effect of treatment \citep{ferreiragonzalez2007}, and treating competing events as censored observations biases estimates of the probability of failure \citep{gooley1999,austin2016}. Our measures are proportions, not time-to-event quantities, and we cite this literature as an analogy only: an episode end that bundles a fix, a decision to stop and the end of observation is a composite of components with different meanings.
+
+\subsection{Measurement validity and reanalysis in software engineering}
+
+Construct validity ``is concerned with whether one can justifiably make claims at the conceptual level that are supported by results at the operational level'' \citep{sjoberg2023}, and many software engineering studies assume that their measures are valid without assessing it \citep{ralph2018}. The present paper asks whether ``no consultation'' is a valid operationalisation of ``resolved without help'' when the unit's end does not require resolution. We follow the guidelines of \citet{sjoberg2023} in Sect.~\ref{sec:threats}.
+
+Reanalyses of shared data in software engineering can lead to disputes about subsets and analysis choices: a meta-analysis of defect prediction studies \citep{shepperd2014} was reanalysed with a weaker conclusion \citep{tantithamthavorn2016}, and the original authors replied that the reanalysis used a subset of the data and that their conclusion held \citep{shepperd2018reply}. We report what the shared data allow us to reproduce and do not judge between versions. \citet{shepperd2018replication} argues that replicating under-powered or under-reported experiments wastes resources and distinguishes replication, which seeks confidence in findings, from reproduction, which concerns the correctness or validity of published results. This paper collects no new data; it examines the validity of a measure computed from published data, and so belongs to the second kind.
+
+\subsection{Literature search}
+
+The positioning above rests on a targeted search (four sub-questions, 2026-09-28; about 30 sources, of which 13 were read in full) for (1) studies that report a ``no consultation'' share without conditioning on outcome, (2) prior critiques of reading the absence of help seeking as self-resolution, (3) methodological sources on composite outcomes and censoring, and (4) measurement validity and reanalysis in software engineering. Within that search we found no study that applied the critique to debugging episodes whose end bundles resolution and stopping, and no methodological discussion of preprint and journal versions reporting different figures for the same shared coding. This is a statement about our search, not about the literature.
+
+%% ===================================================================================
+\section{Measures}\label{sec:measures}
+
+\subsection{Definitions}
+
+Each unit of analysis $i$ (an episode in D1, a task in D2) has two binary attributes: $r_i = 1$ if the unit was resolved and $c_i = 1$ if at least one consultation was recorded during it. Let $N$ be the number of units, $S$ the number of resolved units, $a$ the number of units resolved without consultation ($r_i = 1$, $c_i = 0$) and $b$ the number of units that ended unresolved without consultation ($r_i = 0$, $c_i = 0$). We define
+\begin{equation}
+\Rz = \frac{a+b}{N}, \qquad \Rzp = \frac{a}{N}, \qquad \Ro = \frac{a}{S}.
+\end{equation}
+\Rz{} is outcome-agnostic: it counts every unit without consultation. \Rzp{} requires the outcome: it counts only units that were resolved without consultation, over all units. \Ro{} conditions on the outcome: it has the same numerator as \Rzp{} but counts only resolved units in the denominator.
+
+\subsection{An exact decomposition}
+
+The difference between the outcome-agnostic and the resolution-conditional measure splits into two parts:
+\begin{equation}\label{eq:decomp}
+\underbrace{\Rz - \Ro}_{\text{conditioning effect}}
+= \underbrace{(\Rz - \Rzp)}_{\text{numerator effect}\;=\;b/N\;\ge\;0}
++ \underbrace{(\Rzp - \Ro)}_{\text{denominator-only effect}\;=\;-a(N-S)/(NS)\;\le\;0}.
+\end{equation}
+The \emph{numerator effect} is the share of all units that ended unresolved without consultation. The \emph{denominator-only effect} keeps the numerator of \Rzp{} and replaces the denominator $N$ by $S$; it is never positive. The \emph{conditioning effect} \Rz{}~$-$~\Ro{} changes the numerator and the denominator at once, so it should not be called a denominator effect. The signs hold whenever $N > 0$ and $S > 0$.\footnote{The order of the two steps matters. Changing the denominator first would give $(a+b)/S$, which can exceed 1; changing the numerator first keeps every intermediate quantity a proportion.}
+
+\subsection{Reading the decomposition}
+
+Let $u = (N-S)/N$ be the share of units that ended unresolved and $q = b/(N-S)$ the share of unresolved units without consultation. Since $\Rz = (1-u)\,\Ro + u\,q$,
+\begin{equation}\label{eq:reading}
+\Rz - \Rzp = u\,q, \qquad \Rz - \Ro = u\,(q - \Ro).
+\end{equation}
+Two consequences follow. First, the numerator effect is large when many units end unresolved and many of those lack consultation; it is zero only if no unit ended unresolved without consultation. Second, the conditioning effect is negative exactly when unresolved units were less often unconsulted than resolved ones ($q < \Ro$), that is, when consultation was more common among unresolved units. A small conditioning effect therefore does not imply a small numerator effect: the two parts of Eq.~\eqref{eq:decomp} can cancel. Equation~\eqref{eq:reading} is an identity about the three measures, not an additional analysis; we use it to read the results.
+
+\subsection{Constructs and indicators}
+
+Following the first guideline of \citet{sjoberg2023}, Table~\ref{tab:constructs} lists the concepts involved and the indicators by which each dataset represents them.
+
+\begin{table}[t]
+\caption{Concepts and their indicators in the two datasets. D1: \citet{alaboudi2021,alaboudi2023}; D2: \citet{li2026}. The primary definition is listed first; sensitivity definitions follow in brackets}\label{tab:constructs}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}p{0.17\textwidth}p{0.36\textwidth}p{0.35\textwidth}}
+\toprule
+Concept & D1 indicator (episode) & D2 indicator (task) \\
+\midrule
+Unit and its end & Episode from the first investigation of a defect until it is fixed or the developer stops; interrupted and resumed parts are merged & Debugging task until it is fixed, the developer gives up or continues another time, or the study period ends \\
+Resolution & Outcome code at the end of the episode is DF1, ``fixed completely'' [DF1 or DF2, ``mostly fixed''] & \emph{Resolved} = Y in Table 4 of the paper \\
+Consultation & At least one activity coded as seeking information from resources outside the development environment [also issue-tracker activity and/or activities coded with a resource type] & Task listed in Table 5 under documentation, social-technical sources or web sources [also tasks for which the body text describes consultation] \\
+Resolved without consultation & Resolved and no consultation (numerator of \Rzp{} and \Ro) & Resolved and no consultation \\
+\botrule
+\end{tabular*}
+\end{table}
+
+%% ===================================================================================
+\section{Data}\label{sec:data}
+
+\subsection{D1: debugging episodes in live-streamed open source work}
+
+\citet{alaboudi2021,alaboudi2023} observed 11 developers, each working on a different open source project, in 15 live-streamed videos. The episodes and activities were coded by the first author for the whole dataset after the two authors had calibrated the codebook on 20 episodes and 166 activities; the journal version reports Cohen's kappa of 75\% for episodes and 84\% for activities \citep{alaboudi2023}. The coding is shared as a replication package under CC BY 4.0. The two versions of the paper link to two packages; we downloaded both and found that their coded data (\texttt{rowData.json}) and their codebooks are byte-identical. The journal version's package adds only an interview document from a second study.
+
+\paragraph{Episodes.} The coded data contain \emph{Debugging} blocks with sub-annotations for activities. A block that was interrupted (code DF4, ``the developer got interrupted during the episode'') and a later block in the same session that resumes it (DF7, ``the developer returns from other activity'') belong to the same episode. Merging resumed blocks into the most recent interrupted episode of the same session turns the 109 blocks into the 89 episodes reported by both versions of the paper. Before computing any measure, we checked the extraction against 12 figures reported in the preprint (number of episodes and activities, activities per episode, committed and fresh episodes, unresolved rates by origin, and five statistics of consultation); all 12 agreed, with the number of activities at 2,136 against 2,137 reported (tolerance 1). Together with four invariants of the merge (no more than one open episode, no resume without an interruption, no unresumed interruption, no resumed block that starts before the interrupted one ends) and three structural checks (11 developers and 15 sessions, as in Table 2 of the journal version, and no unrecognised code tokens), \R{gate/d1/ok} of \R{gate/d1/n} checks passed.
+
+\paragraph{Outcome.} The codebook asks ``Did the developer fix the bug completely?'' with the answers DF1 (yes), DF2 (mostly yes, with some incorrect behaviour that the developer decides to leave), DF3 (no, the developer is going to return later), DF4 (interrupted) and DF5 (the developer cannot reproduce the issue). After merging, the last block of the 89 episodes carries DF1 in \R{d1/codes/DF1}, DF2 in \R{d1/codes/DF2}, DF3 in \R{d1/codes/DF3} and DF5 in \R{d1/codes/DF5} episodes. The primary definition treats DF1 as resolved; a sensitivity definition also treats DF2 as resolved.
+
+\paragraph{Consultation.} The primary definition (\emph{strict}) counts an episode as consulted if it contains at least one activity coded as seeking information outside the development environment, that is, searching or reading documentation, code examples or explanations of errors on the web, or asking developers for help in a chat. This definition was fixed before this study by matching three independent statistics of the preprint. The journal version defines consulting resources as ``Browse online documents, forms, issue tracker, and any type of resources outside the development environment'' \citep{alaboudi2023}, whereas the codebook places issue-tracker work under a separate \emph{Other} activity (code OT2). We therefore add three sensitivity definitions: \emph{+U} (also \emph{Other} activities that carry one of the codebook's U codes, which describe interactions with external resources), \emph{+OT2} (also issue-tracker activities) and \emph{+OT2+U}.
+
+\paragraph{Defect origin.} An episode is \emph{committed} if it begins with the developer reproducing a defect from a bug report (DF8) and \emph{fresh} otherwise, following both versions of the paper: 10 episodes are committed and 79 fresh.
+
+\subsection{D2: debugging tasks in professional practice}
+
+\citet{li2026} observed seven professional developers (P1--P7) on 11 debugging tasks totalling 7.8 hours and analysed recordings of five streamers (S1--S5) on six tasks, for 17 tasks in all. The paper is published under CC BY 4.0. The unit of analysis is the task. We use only the paper's tables: Table~4 gives, for each task, whether it was resolved (13 yes, 4 no), and Table~5 lists the tasks in which each debugging technique was observed. We count a task as consulted if Table~5 lists it under documentation, social-technical sources or web sources; six tasks qualify. The authors' supplementary spreadsheets are not used because their repository carries no licence.
+
+The four unresolved tasks include both participants' and streamers' tasks: the authors state that ``participants did not resolve the task within the study period (P4TA, S3TA, S4TB, S5TA)'' \citep{li2026}. In D2, ``unresolved'' therefore includes the end of observation, not only giving up.
+
+\paragraph{Text-described consultations.} The authors ``prioritized coding the verbal transcripts'' rather than ``fine-grained coding of screen-captured actions such as search and navigation'' \citep{li2026}, so Table~5 may omit consultations. The body text describes consultations in two tasks that Table~5 does not list under the three techniques: P1 identified colleagues with relevant expertise and reviewed reports of similar issues, and streamers S3 and S5 brainstormed with viewers in the chat (S3TA is already listed). A sensitivity definition (\emph{table+text}) adds these two tasks (\R{d2/texttasks}). A further mention of documentation use by streamer S4 is not added because S4 worked on two tasks and the sentence does not say which.
+
+\paragraph{Transcription.} Table~4 (task, time, resolution) and the three rows of Table~5 were transcribed twice, independently, with an LLM-based assistant (Sect.~\ref{sec:llm}); the two transcriptions are identical. They were checked against totals stated elsewhere in the paper (for example, 7.8 hours of participant tasks and the list of unresolved tasks; \R{gate/d2/ok} of \R{gate/d2/n} checks passed), and the author compared every transcribed row and the three quoted sentences with the PDF and found no discrepancy. One figure did not match and is reported only: the streamer tasks in Table~4 sum to \R{d2/streamermin} minutes (\R{d2/streamerhours} hours), whereas the text states \R{d2/streamerhoursstated} hours. It does not enter any measure.
+
+%% ===================================================================================
+\section{Method}\label{sec:method}
+
+\subsection{Analysis definitions}
+
+This is an exploratory reanalysis without preregistration. The definitions of the measures, the episode extraction, the consultation and resolution definitions, the clusters for resampling and the interval procedure were written into a configuration file and committed to the repository before the analysis code produced the results reported here; the commit history records the order. Two exceptions are disclosed. While identifying which rule might produce the journal version's figures for D1 (RQ4), we computed \Rz{} and \Rzp{} once for the two issue-tracker definitions in an exploratory script; the primary definition had been fixed earlier and was not changed, and all four definitions are reported. For D2, the values under the primary definition, and the approximate effect of adding the two text-described tasks, were computed by hand on the same day, before the repository existed and before the rule for text-described consultations was written down. Six later changes (names of measures, a renamed data folder, additional checks, a tie-breaking rule, the handling of undefined bootstrap replicates and the wording of one definition) are logged in the replication package; none changed a reported value.
+
+\subsection{Estimation and intervals}
+
+For every combination of definitions we report \Rz{}, \Rzp{}, \Ro{} and the three effects of Eq.~\eqref{eq:decomp} as percentages, with the underlying counts. Episodes of the same developer are not independent, so we estimate uncertainty with a cluster (``pairs cluster'') bootstrap that resamples whole developers with replacement \citep{cameron2008,cameron2015} (D1: \R{d1/strict/DF1/K} developers, each on a different project; D2: \R{d2/table5/K} developers), recomputes every measure from the pooled counts, and takes the 2.5th and 97.5th percentiles of \R{boot/replicates} replicates (seed \R{seed}). For comparison, we also report Wilson score intervals \citep{wilson1927} for the proportions; they are recommended for small samples of independent observations \citep{brown2001} but ignore clustering.
+
+These intervals are likely to be too narrow. Percentile bootstrap intervals tend to be too narrow in small samples \citep{hesterberg2015}, and with few clusters, cluster-robust tests of regression coefficients over-reject, a problem that the pairs cluster bootstrap does not remove \citep{cameron2008,cameron2015}. We did not find a study of the same question for proportions, so this evidence is indirect; we read our intervals as a lower bound on uncertainty. For the numerator effect we also report the share of replicates that cannot contain any unresolved, unconsulted unit: if $k$ of the $K$ developers contributed such a unit, a replicate draws none of them with probability $((K-k)/K)^K$, and when this exceeds 2.5\% the lower end of the numerator-effect interval is exactly 0.
+
+\subsection{Reproduction of reported figures}
+
+For RQ4 we computed, under each of the four consultation definitions, eight figures that the journal version of D1 reports \citep{alaboudi2023}: the number of activities, the share of time in the longest quarter of episodes, and the share of episodes with consultation among all episodes, committed and fresh episodes, the shortest and longest quarter of episodes (22 and 23 episodes by duration), and developers. A figure counts as reproduced if our value rounds to the reported percentage (tolerance 0.5 percentage points) or equals the reported count. This comparison is a result, not a check: a mismatch does not stop the analysis.
+
+\subsection{Checks}
+
+A single script reproduces the analysis. It verifies the SHA-256 hash of the input; runs self-tests in which the D1 extraction checks must fail when consultations are relabelled or the merge is disabled, the four consultation rules must match a truth table, synthetic data with a known $2 \times 2$ table must be recovered exactly (including a merged episode), data without unresolved units must give zero effects, and the bootstrap must resample whole clusters; runs the analysis twice under different hash seeds and requires byte-identical output; and requires the output to equal the results shipped with the package. The manuscript takes every number from the same output file, and its build fails if the two disagree.
+
+\subsection{Use of large language models}\label{sec:llm}
+
+An LLM-based coding assistant (Anthropic Claude) was used in three ways. (1) The two transcriptions of the D2 tables were produced by two separate instances of the assistant, one of which saw only the PDF; because both instances come from the same model, their agreement guards against slips but not against a shared misreading, which is why the transcriptions were also checked against totals in the paper and by the author against the PDF. (2) The assistant wrote most of the analysis code under the author's direction; the checks described above were designed to catch errors in that code. (3) The assistant helped draft and revise this manuscript. The author reviewed all outputs and takes responsibility for the content.
+%% PLACEHOLDER: the author should confirm this description of LLM use before submission.
+
+%% ===================================================================================
+\section{Results}\label{sec:results}
+
+\subsection{RQ1: How far does \texorpdfstring{\Rz{}}{R0} exceed \texorpdfstring{\Rzp{}}{R0'}?}
+
+Table~\ref{tab:main} shows the measures under the primary definitions. In D1, \R{d1/strict/DF1/free} of \R{d1/strict/DF1/n} episodes had no consultation (\Rz{} = \R{d1/strict/DF1/R0}\%), but only \R{d1/strict/DF1/a} of them were resolved (\Rzp{} = \R{d1/strict/DF1/R0p}\%). The numerator effect, the share of episodes that ended unresolved without consultation, was \R{d1/strict/DF1/ne}\pp{} (\R{d1/strict/DF1/b}/\R{d1/strict/DF1/n}; developer-level bootstrap 95\% interval \CI{d1/strict/DF1/ne}; Wilson \WCI{d1/strict/DF1/ne}). Of the \R{d1/strict/DF1/free} episodes that \Rz{} counts as ``no consultation'', \R{d1/strict/DF1/b} ended without the defect being completely fixed.
+
+In D2, the numerator effect was \R{d2/table5/ne}\pp{} from the tables (\R{d2/table5/b}/\R{d2/table5/n}; \CI{d2/table5/ne}; Wilson \WCI{d2/table5/ne}) and \R{d2/text/ne}\pp{} when the two text-described consultations were added (\R{d2/text/b}/\R{d2/text/n}; \CI{d2/text/ne}; Wilson \WCI{d2/text/ne}). We report the two values side by side: the table-only value is not the more credible one, since Table~5 may omit consultations (Sect.~\ref{sec:data}). Both bootstrap intervals start at 0 because the unresolved, unconsulted tasks come from very few developers; \R{d2/table5/p0}\% and \R{d2/text/p0}\% of replicates contain none of them. In D2 the unresolved tasks include the end of observation, so the numerator effect here is the share of tasks for which neither a fix nor a consultation was recorded by the end of observation, which is not the same event as in D1.
+
+The two datasets differ in unit, size and the meaning of ``unresolved'', and D2's interval is wide. We therefore do not claim that D2 replicates D1 or that the two effects are of similar size; we report that the difference was positive in both.
+
+\begin{table}[t]
+\caption{Measures under the primary definitions (percentages; counts in parentheses). Brackets: developer-level cluster-bootstrap 95\% intervals; W: Wilson 95\% intervals ignoring clustering. $p_0$: share of bootstrap replicates without any unresolved, unconsulted unit. D2 is shown with the table-only and the table+text definition of consultation}\label{tab:main}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccc}
+\toprule
+ & D1 strict, DF1 & D2 table & D2 table+text \\
+\midrule
+Units (developers) & \R{d1/strict/DF1/n} (\R{d1/strict/DF1/K}) & \R{d2/table5/n} (\R{d2/table5/K}) & \R{d2/text/n} (\R{d2/text/K}) \\
+Resolved / unresolved & \R{d1/strict/DF1/S} / \R{d1/strict/DF1/U} & \R{d2/table5/S} / \R{d2/table5/U} & \R{d2/text/S} / \R{d2/text/U} \\
+\Rz{} & \R{d1/strict/DF1/R0} (\R{d1/strict/DF1/free}/\R{d1/strict/DF1/n}) & \R{d2/table5/R0} (\R{d2/table5/free}/\R{d2/table5/n}) & \R{d2/text/R0} (\R{d2/text/free}/\R{d2/text/n}) \\
+\Rzp{} & \R{d1/strict/DF1/R0p} (\R{d1/strict/DF1/a}/\R{d1/strict/DF1/n}) & \R{d2/table5/R0p} (\R{d2/table5/a}/\R{d2/table5/n}) & \R{d2/text/R0p} (\R{d2/text/a}/\R{d2/text/n}) \\
+\Ro{} & \R{d1/strict/DF1/R1} (\R{d1/strict/DF1/a}/\R{d1/strict/DF1/S}) & \R{d2/table5/R1} (\R{d2/table5/a}/\R{d2/table5/S}) & \R{d2/text/R1} (\R{d2/text/a}/\R{d2/text/S}) \\
+\midrule
+Numerator effect \Rz{}~$-$~\Rzp{} & \R{d1/strict/DF1/ne} \CI{d1/strict/DF1/ne} & \R{d2/table5/ne} \CI{d2/table5/ne} & \R{d2/text/ne} \CI{d2/text/ne} \\
+\quad W & \WCI{d1/strict/DF1/ne} & \WCI{d2/table5/ne} & \WCI{d2/text/ne} \\
+\quad $p_0$ & \R{d1/strict/DF1/p0}\% & \R{d2/table5/p0}\% & \R{d2/text/p0}\% \\
+Denominator-only effect \Rzp{}~$-$~\Ro{} & \R{d1/strict/DF1/de} \CI{d1/strict/DF1/de} & \R{d2/table5/de} \CI{d2/table5/de} & \R{d2/text/de} \CI{d2/text/de} \\
+Conditioning effect \Rz{}~$-$~\Ro{} & \R{d1/strict/DF1/ce} \CI{d1/strict/DF1/ce} & \R{d2/table5/ce} \CI{d2/table5/ce} & \R{d2/text/ce} \CI{d2/text/ce} \\
+\botrule
+\end{tabular*}
+\end{table}
+
+\subsection{RQ2: Sensitivity to definitions, and what restricting to resolved units changes}
+
+\paragraph{Definitions of consultation and resolution.} Table~\ref{tab:d1} shows D1 under all eight combinations of definitions. The numerator effect ranged from \R{d1/ne/min}\pp{} to \R{d1/ne/max}\pp{}, and every bootstrap interval excluded 0. Including issue-tracker activities as consultation lowered the numerator effect from \R{d1/strict/DF1/ne}\pp{} to \R{d1/ot2/DF1/ne}\pp{} under DF1; treating ``mostly fixed'' (DF2) as resolved lowered it from \R{d1/strict/DF1/ne}\pp{} to \R{d1/strict/DF12/ne}\pp{} under the strict definition. Under DF1, the fresh-defect episodes contribute \R{d1/freshb} unresolved, unconsulted episodes under all four consultation definitions, or \R{d1/freshshare}\pp{} of all episodes; this is the smallest numerator effect under DF1, reached when issue-tracker activities are included and the committed episodes contribute none. In D2, adding the text-described consultations halved the numerator effect (from \R{d2/table5/ne}\pp{} to \R{d2/text/ne}\pp).
+
+\begin{table}[t]
+\caption{D1 under all combinations of the consultation definition (strict, +U, +OT2, +OT2+U) and the resolution definition (DF1; DF1 or DF2). $N = \R{d1/strict/DF1/n}$ episodes, \R{d1/strict/DF1/K} developers. Percentages; brackets: developer-level cluster-bootstrap 95\% intervals}\label{tab:d1}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}llccclll}
+\toprule
+Consultation & Resolved & \Rz & \Rzp & \Ro & Numerator effect & Denominator-only & Conditioning \\
+\midrule
+strict & DF1 & \R{d1/strict/DF1/R0} & \R{d1/strict/DF1/R0p} & \R{d1/strict/DF1/R1} & \R{d1/strict/DF1/ne} \CI{d1/strict/DF1/ne} & \R{d1/strict/DF1/de} \CI{d1/strict/DF1/de} & \R{d1/strict/DF1/ce} \CI{d1/strict/DF1/ce} \\
+strict & DF1, DF2 & \R{d1/strict/DF12/R0} & \R{d1/strict/DF12/R0p} & \R{d1/strict/DF12/R1} & \R{d1/strict/DF12/ne} \CI{d1/strict/DF12/ne} & \R{d1/strict/DF12/de} \CI{d1/strict/DF12/de} & \R{d1/strict/DF12/ce} \CI{d1/strict/DF12/ce} \\
++U & DF1 & \R{d1/u/DF1/R0} & \R{d1/u/DF1/R0p} & \R{d1/u/DF1/R1} & \R{d1/u/DF1/ne} \CI{d1/u/DF1/ne} & \R{d1/u/DF1/de} \CI{d1/u/DF1/de} & \R{d1/u/DF1/ce} \CI{d1/u/DF1/ce} \\
++U & DF1, DF2 & \R{d1/u/DF12/R0} & \R{d1/u/DF12/R0p} & \R{d1/u/DF12/R1} & \R{d1/u/DF12/ne} \CI{d1/u/DF12/ne} & \R{d1/u/DF12/de} \CI{d1/u/DF12/de} & \R{d1/u/DF12/ce} \CI{d1/u/DF12/ce} \\
++OT2 & DF1 & \R{d1/ot2/DF1/R0} & \R{d1/ot2/DF1/R0p} & \R{d1/ot2/DF1/R1} & \R{d1/ot2/DF1/ne} \CI{d1/ot2/DF1/ne} & \R{d1/ot2/DF1/de} \CI{d1/ot2/DF1/de} & \R{d1/ot2/DF1/ce} \CI{d1/ot2/DF1/ce} \\
++OT2 & DF1, DF2 & \R{d1/ot2/DF12/R0} & \R{d1/ot2/DF12/R0p} & \R{d1/ot2/DF12/R1} & \R{d1/ot2/DF12/ne} \CI{d1/ot2/DF12/ne} & \R{d1/ot2/DF12/de} \CI{d1/ot2/DF12/de} & \R{d1/ot2/DF12/ce} \CI{d1/ot2/DF12/ce} \\
++OT2+U & DF1 & \R{d1/ot2u/DF1/R0} & \R{d1/ot2u/DF1/R0p} & \R{d1/ot2u/DF1/R1} & \R{d1/ot2u/DF1/ne} \CI{d1/ot2u/DF1/ne} & \R{d1/ot2u/DF1/de} \CI{d1/ot2u/DF1/de} & \R{d1/ot2u/DF1/ce} \CI{d1/ot2u/DF1/ce} \\
++OT2+U & DF1, DF2 & \R{d1/ot2u/DF12/R0} & \R{d1/ot2u/DF12/R0p} & \R{d1/ot2u/DF12/R1} & \R{d1/ot2u/DF12/ne} \CI{d1/ot2u/DF12/ne} & \R{d1/ot2u/DF12/de} \CI{d1/ot2u/DF12/de} & \R{d1/ot2u/DF12/ce} \CI{d1/ot2u/DF12/ce} \\
+\botrule
+\end{tabular*}
+\end{table}
+
+\paragraph{Restricting to resolved units.} If one suspects that \Rz{} is inflated by unresolved units, an obvious correction is to restrict to resolved units and report \Ro{}. In D1 under the primary definitions, \Ro{} = \R{d1/strict/DF1/R1}\% is close to \Rz{} = \R{d1/strict/DF1/R0}\%: the conditioning effect \Rz{}~$-$~\Ro{} is \R{d1/strict/DF1/ce}\pp{}, and its interval \CI{d1/strict/DF1/ce} contains 0. By Eq.~\eqref{eq:decomp}, this small difference is the sum of a numerator effect of \R{d1/strict/DF1/ne2}\pp{} and a denominator-only effect of \R{d1/strict/DF1/de2}\pp{} \CI{d1/strict/DF1/de}, which nearly cancel. By Eq.~\eqref{eq:reading}, the conditioning effect is negative because the \R{d1/strict/DF1/U} unresolved episodes were less often unconsulted ($q$ = \R{d1/strict/DF1/Q}\%) than the resolved ones (\Ro{} = \R{d1/strict/DF1/R1}\%): consultation occurred in \R{d1/strict/DF1/cuPct}\% of unresolved episodes and in \R{d1/strict/DF1/crPct}\% of resolved ones. Across all \R{all/cells} combinations of definitions in both datasets, the conditioning effect ranged from \R{all/ce/min}\pp{} to \R{all/ce/max}\pp, its point estimate was negative in every one and its interval contained 0 in every one, whereas every denominator-only interval lay below 0. A resolution-conditional measure thus looks close to the outcome-agnostic one while counting a different set of units; the closeness is not evidence that unresolved units do not matter.
+
+\subsection{RQ3: Confounding by defect origin}
+
+Pooled over D1, consultation was more common among unresolved episodes (\R{d1/strict/DF1/cu}/\R{d1/strict/DF1/U}) than among resolved ones (\R{d1/strict/DF1/cr}/\R{d1/strict/DF1/S}). Table~\ref{tab:origin} splits the episodes by defect origin. Committed-defect episodes were both more often unresolved (\R{d1/origin/committed/unres} against \R{d1/origin/fresh/unres} fresh episodes) and more often consulted (\R{d1/origin/committed/cons} against \R{d1/origin/fresh/cons} under the strict definition). Under the strict definition, consultation occurred in \R{d1/strict/origin/committed/cr} resolved and \R{d1/strict/origin/committed/cu} unresolved committed episodes, the reverse of the pooled direction, and in \R{d1/strict/origin/fresh/cr} resolved and \R{d1/strict/origin/fresh/cu} unresolved fresh episodes. When issue-tracker activities count as consultation, every committed episode is consulted (\R{d1/ot2/origin/committed/cr} and \R{d1/ot2/origin/committed/cu}), and the committed episodes no longer contribute to the numerator effect. The pooled association between outcome and consultation thus partly reflects which defects the developers were working on; the original authors already reported that consultation differs by origin \citep{alaboudi2023}. With 10 committed episodes, we do not estimate adjusted effects.
+
+\begin{table}[t]
+\caption{D1 by defect origin (resolved = DF1). Consulted among resolved and among unresolved episodes, and the numerator effect \Rz{}~$-$~\Rzp{} within each origin (percentages of the episodes of that origin)}\label{tab:origin}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}llcccc}
+\toprule
+Consultation & Origin & Episodes & Consulted, resolved & Consulted, unresolved & Numerator effect \\
+\midrule
+strict & committed & \R{d1/strict/origin/committed/n} & \R{d1/strict/origin/committed/cr} & \R{d1/strict/origin/committed/cu} & \R{d1/strict/origin/committed/ne} \\
+strict & fresh & \R{d1/strict/origin/fresh/n} & \R{d1/strict/origin/fresh/cr} & \R{d1/strict/origin/fresh/cu} & \R{d1/strict/origin/fresh/ne} \\
++U & committed & \R{d1/u/origin/committed/n} & \R{d1/u/origin/committed/cr} & \R{d1/u/origin/committed/cu} & \R{d1/u/origin/committed/ne} \\
++U & fresh & \R{d1/u/origin/fresh/n} & \R{d1/u/origin/fresh/cr} & \R{d1/u/origin/fresh/cu} & \R{d1/u/origin/fresh/ne} \\
++OT2 & committed & \R{d1/ot2/origin/committed/n} & \R{d1/ot2/origin/committed/cr} & \R{d1/ot2/origin/committed/cu} & \R{d1/ot2/origin/committed/ne} \\
++OT2 & fresh & \R{d1/ot2/origin/fresh/n} & \R{d1/ot2/origin/fresh/cr} & \R{d1/ot2/origin/fresh/cu} & \R{d1/ot2/origin/fresh/ne} \\
++OT2+U & committed & \R{d1/ot2u/origin/committed/n} & \R{d1/ot2u/origin/committed/cr} & \R{d1/ot2u/origin/committed/cu} & \R{d1/ot2u/origin/committed/ne} \\
++OT2+U & fresh & \R{d1/ot2u/origin/fresh/n} & \R{d1/ot2u/origin/fresh/cr} & \R{d1/ot2u/origin/fresh/cu} & \R{d1/ot2u/origin/fresh/ne} \\
+\botrule
+\end{tabular*}
+\end{table}
+
+\subsection{RQ4: Can the reported consultation figures be reproduced?}
+
+\paragraph{D1.} The preprint and the journal version report different consultation figures for the same 89 episodes (21\% and 33\% of episodes with consultation), yet their replication packages contain the same coding. Table~\ref{tab:emse} compares the journal version's figures with the shared coding under each of our four definitions. The share of time in the longest quarter of episodes (79\%) and the absence of consultation in the shortest quarter were reproduced under every definition. The consultation figures were not reproduced together under any definition: that consultation occurred in all committed episodes requires counting issue-tracker activities, while the 15\% of fresh episodes and the 91\% of developers are reproduced only without them. The strict definition reproduced \R{emse/matched/strict} figures and each of the other three reproduced \R{emse/matched/ot2}. The number of activities in the shared coding, 2,136, differs by one from both the preprint (2,137) and the journal version (2,135). We could not determine how the journal version's figures were obtained; the same data may have been aggregated differently, which we cannot rule out.
+
+\begin{table}[t]
+\caption{Consultation figures reported in the journal version of D1 \citep{alaboudi2023}, computed from the shared coding under four definitions of consultation. \repok: reproduced (within 0.5 percentage points, or the same count); \repno: not reproduced}\label{tab:emse}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccc}
+\toprule
+Reported figure & Reported & strict & +U & +OT2 & +OT2+U \\
+\midrule
+Activities & \R{emse/activities/reported} & \R{emse/activities/strict} \R{emse/activities/strict/ok} & \R{emse/activities/u} \R{emse/activities/u/ok} & \R{emse/activities/ot2} \R{emse/activities/ot2/ok} & \R{emse/activities/ot2u} \R{emse/activities/ot2u/ok} \\
+Time in longest quarter & \R{emse/timesharetop23/reported} & \R{emse/timesharetop23/strict} \R{emse/timesharetop23/strict/ok} & \R{emse/timesharetop23/u} \R{emse/timesharetop23/u/ok} & \R{emse/timesharetop23/ot2} \R{emse/timesharetop23/ot2/ok} & \R{emse/timesharetop23/ot2u} \R{emse/timesharetop23/ot2u/ok} \\
+Episodes consulted & \R{emse/episodeswithconsult/reported} & \R{emse/episodeswithconsult/strict} \R{emse/episodeswithconsult/strict/ok} & \R{emse/episodeswithconsult/u} \R{emse/episodeswithconsult/u/ok} & \R{emse/episodeswithconsult/ot2} \R{emse/episodeswithconsult/ot2/ok} & \R{emse/episodeswithconsult/ot2u} \R{emse/episodeswithconsult/ot2u/ok} \\
+Committed consulted & \R{emse/committedwithconsult/reported} & \R{emse/committedwithconsult/strict} \R{emse/committedwithconsult/strict/ok} & \R{emse/committedwithconsult/u} \R{emse/committedwithconsult/u/ok} & \R{emse/committedwithconsult/ot2} \R{emse/committedwithconsult/ot2/ok} & \R{emse/committedwithconsult/ot2u} \R{emse/committedwithconsult/ot2u/ok} \\
+Fresh consulted & \R{emse/freshwithconsult/reported} & \R{emse/freshwithconsult/strict} \R{emse/freshwithconsult/strict/ok} & \R{emse/freshwithconsult/u} \R{emse/freshwithconsult/u/ok} & \R{emse/freshwithconsult/ot2} \R{emse/freshwithconsult/ot2/ok} & \R{emse/freshwithconsult/ot2u} \R{emse/freshwithconsult/ot2u/ok} \\
+Short episodes consulted & \R{emse/shortwithconsult/reported} & \R{emse/shortwithconsult/strict} \R{emse/shortwithconsult/strict/ok} & \R{emse/shortwithconsult/u} \R{emse/shortwithconsult/u/ok} & \R{emse/shortwithconsult/ot2} \R{emse/shortwithconsult/ot2/ok} & \R{emse/shortwithconsult/ot2u} \R{emse/shortwithconsult/ot2u/ok} \\
+Long episodes consulted & \R{emse/longwithconsult/reported} & \R{emse/longwithconsult/strict} \R{emse/longwithconsult/strict/ok} & \R{emse/longwithconsult/u} \R{emse/longwithconsult/u/ok} & \R{emse/longwithconsult/ot2} \R{emse/longwithconsult/ot2/ok} & \R{emse/longwithconsult/ot2u} \R{emse/longwithconsult/ot2u/ok} \\
+Developers consulted & \R{emse/developerswithconsult/reported} & \R{emse/developerswithconsult/strict} \R{emse/developerswithconsult/strict/ok} & \R{emse/developerswithconsult/u} \R{emse/developerswithconsult/u/ok} & \R{emse/developerswithconsult/ot2} \R{emse/developerswithconsult/ot2/ok} & \R{emse/developerswithconsult/ot2u} \R{emse/developerswithconsult/ot2u/ok} \\
+\midrule
+Reproduced & & \R{emse/matched/strict} & \R{emse/matched/u} & \R{emse/matched/ot2} & \R{emse/matched/ot2u} \\
+\botrule
+\end{tabular*}
+\end{table}
+
+\paragraph{D2.} Table~5 of \citet{li2026} lists six consulted tasks, and the body text describes consultations in two more. A reanalysis that extracts only the tables therefore undercounts consultation, and table-based consultation should be read as a lower bound. Here the omission halves the numerator effect (RQ1).
+
+%% ===================================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{What an outcome-agnostic measure counts}
+
+When a unit of analysis can end without a fix, ``no consultation'' mixes two groups: units that were resolved without consultation, and units that ended unresolved without consultation. The second group is present in both datasets: \R{d1/strict/DF1/b} of the \R{d1/strict/DF1/free} unconsulted episodes in D1, and \R{d2/table5/b} of the \R{d2/table5/free} unconsulted tasks in D2 under the table-only definition. In D1 these are episodes that ended with the defect mostly but not completely fixed, postponed until later, or not reproducible; in D2 they include tasks that were still open when observation ended. Reading \Rz{} as ``solved without help'' attributes all of them to unaided resolution. Whether stopping without consultation should count as a failure, a neutral event or something else is a question about what the measure is meant to represent; the clinical trial literature reached the same point when it required that failure scores for intercurrent events ``meaningfully reflect'' their meaning \citep{ich2020e9r1}. Our point is only that \Rz{} answers none of these questions, because it does not look at the outcome.
+
+\subsection{Why restricting to resolved units does not settle the question}
+
+Restricting to resolved units removes the unresolved units from both the numerator and the denominator. In D1 the conditioning effect was only \R{d1/strict/DF1/ce}\pp{}, which might suggest that the outcome hardly matters. Eq.~\eqref{eq:reading} shows why that inference fails: the conditioning effect is small whenever unresolved units are about as often unconsulted as resolved ones, however many unresolved units there are. In D1 the unresolved episodes were in fact consulted more often than the resolved ones, so the conditioning effect was negative even though \R{d1/strict/DF1/b} episodes ended unresolved without consultation. \Ro{} also answers a different question from \Rzp{}: among resolved units, how many were resolved without consultation, rather than how many of all units ended in unaided resolution. Both questions can be legitimate, but they need different names.
+
+\subsection{Recommendations for reporting}
+
+For studies whose units can end without resolution, and for reanalyses that reuse such data, we recommend:
+
+\begin{enumerate}
+\item Report the outcome-agnostic share (\Rz, or its complement, the consultation rate) together with the outcome-requiring share \Rzp{}, and name them differently.
+\item Report the share of units that ended unresolved without consultation (the numerator effect) as a category of its own, not only as the difference between two percentages.
+\item Count the components of the unit's end separately, for example fixed, stopped, postponed, interrupted, not reproducible and end of observation, so that readers can decide which of them count as resolution. D1's codebook already records most of these distinctions; D2's tables record only resolved or not.
+\item State the operational definition of consultation (which activities and which resources count) and of resolution, and state which version of a coding and which rule produced each reported figure. When figures are computed from tables, say whether consultations described only in the text were included.
+\end{enumerate}
+
+The first three recommendations are the proportion-scale counterpart of reporting the components of a composite outcome separately \citep{ferreiragonzalez2007} and of distinguishing intercurrent events from the end of observation \citep{ich2020e9r1}; the fourth follows from RQ2 and RQ4.
+
+\subsection{On reproducing reported figures}
+
+The discrepancy between the journal version's consultation figures and its shared coding (RQ4) does not tell us which figures are correct. One possibility is that the data were recoded for the journal version and the package was not updated; another is a counting rule that we did not consider. The shared coding is the only one available to us. What the discrepancy does show is that a reader who reuses a reported consultation rate cannot, from the published material, tell which rule and which coding produced it. This is why we report all four definitions rather than choosing the one that fits best, and why the fourth recommendation asks for the rule and the version. Disputes over reanalyses of shared data are not new in software engineering \citep{shepperd2014,tantithamthavorn2016,shepperd2018reply}; we hope that publishing the reproduction table item by item, rather than a single verdict, keeps the discussion about the figures.
+
+A reanalysis of two small datasets might be read as the kind of replication that \citet{shepperd2018replication} considers wasteful. This paper does not replicate an experiment; it examines what a measure computed from published data counts, which is the question of the validity of published results that the same author distinguishes from replication.
+
+%% ===================================================================================
+\section{Threats to validity}\label{sec:threats}
+
+We organise this section following \citet{sjoberg2023}: construct validity is limited to the definition of the concepts and to the underrepresentation and biased representation of them by their indicators (their guidelines G3.1--G3.3), and other threats are reported under the type of validity to which they belong (G4), each with the construct or inference it affects (G5). Table~\ref{tab:constructs} is the model of constructs that their guideline G1 asks for; guideline G2 (import validated constructs) applies only in part, because we took the indicators of consultation and resolution from the original codings rather than from a validated instrument.
+
+\subsection{Construct validity}
+
+\paragraph{Consultation (definition).} The two datasets define consultation differently: D1 codes observed activities, D2 codes techniques mentioned or observed, and D2's web sources include AI assistants, which do not appear among the resource types that the D1 codebook distinguishes. We therefore do not compare levels of consultation across datasets, only the direction of the difference between \Rz{} and \Rzp{} within each.
+
+\paragraph{Consultation (underrepresentation).} In D2, consultation is represented by a single indicator derived from a table that the authors did not build from fine-grained coding of screen actions; the body text shows that it omits at least two consulted tasks, and a consultation that was neither verbalised nor noted is missing from both sources. Table-based consultation is therefore a lower bound, and, if the listed consultations are correct, the table-only numerator effect is an upper bound for the given resolution outcome. In D1, the four definitions bracket the uncertainty about which activities count; they do not cover consultations that the coder did not see.
+
+\paragraph{Resolution (definition and bias).} ``Resolved'' in D1 is the coder's judgement at the end of the episode, and DF2 (``mostly'' fixed) is a borderline case, which we handled by a sensitivity definition. In D2, ``unresolved'' includes the end of the study period. Neither dataset records whether a fix was correct in the long run. In both datasets one author coded the whole dataset (in D1 after calibration with the second author on a subset; in D2 with discussion between the two authors), so systematic errors of that coder would not be detected by inter-rater agreement.
+
+\subsection{Internal validity}
+
+We make no causal claim about consultation and resolution. The association between them in D1 is confounded at least by defect origin (RQ3), and with 10 committed episodes we did not attempt an adjusted analysis. The definitions were fixed before the results were computed, with the two exceptions disclosed in Sect.~\ref{sec:method}; all definitions examined are reported.
+
+\subsection{External validity}
+
+D1 consists of 11 developers who chose to stream their open source work, and D2 of seven professionals and five streamers; streamers may consult or narrate differently because they are watched. The tasks were those that happened during the sessions. The size of the numerator effect depends on how often units end unresolved and on how often those lack consultation (Eq.~\eqref{eq:reading}), both of which will vary with the setting. Our results show that the difference was not negligible in the two datasets we examined; they do not estimate its size in other populations.
+
+\subsection{Statistical conclusion validity}
+
+With 11 and 12 clusters, the percentile cluster-bootstrap intervals are likely to be too narrow, and Wilson intervals, which ignore clustering, are narrower than they should be for clustered data. In D2 the unresolved, unconsulted tasks come from \R{d2/table5/k} developers (\R{d2/text/k} under the table+text definition), so the lower end of the interval is 0 by construction. We report many combinations of definitions without adjusting for multiplicity; they are sensitivity analyses of one quantity, not separate hypotheses.
+
+\subsection{Reliability of the reanalysis}
+
+The D2 transcriptions were produced by two instances of the same LLM-based assistant, which guards against slips but not against a shared misreading; the totals check and the author's comparison with the PDF are the independent safeguards. The D1 extraction reproduces 12 figures of the preprint, but the number of activities differs by one from both versions, for a reason we could not identify. Code errors are guarded against by the self-tests and by synthetic controls, not by an independent reimplementation.
+
+%% ===================================================================================
+\section{Conclusion}\label{sec:conclusion}
+
+In two public datasets of professional debugging, the share of episodes or tasks without consultation over-states the share that were resolved without consultation, by \R{d1/strict/DF1/ne} percentage points in D1 and by \R{d2/text/ne} to \R{d2/table5/ne} points in D2. The difference depends on what counts as consultation and resolution, and restricting to resolved units hides it because two opposite effects cancel. Studies that count ``no help'' should also report what happened to the units without help, and reanalyses should state which coding and which rule produced each figure they reuse.
+
+%% ===================================================================================
+\backmatter
+
+\section*{Statements and Declarations}
+
+\bmhead{Funding}
+%% PLACEHOLDER: to be confirmed by the author.
+[To be confirmed by the author.]
+
+\bmhead{Competing interests}
+%% PLACEHOLDER: to be confirmed by the author.
+[To be confirmed by the author.]
+
+\bmhead{Ethics approval and consent to participate}
+%% PLACEHOLDER: to be confirmed by the author.
+This study is a secondary analysis of published, openly licensed data and publications; no data were collected from human participants for this study. [To be confirmed by the author.]
+
+\bmhead{Consent for publication}
+Not applicable.
+
+\bmhead{Data availability}
+The coded data of D1 are available from the replication packages of \citet{alaboudi2021} (\url{https://figshare.com/s/6c4026a941db49ea3de3}) and \citet{alaboudi2023} (\url{https://figshare.com/s/0e9eac98b8ddd54c384c}) under CC BY 4.0; they are not redistributed with this paper, and the replication package lists their SHA-256 hashes and how to obtain them. The transcriptions of the D2 tables, the analysis configuration and all results are part of the replication package, released under CC BY 4.0: \url{https://github.com/mikotomiura/self-resolution-measure} [archived copy with DOI to be added].
+
+\bmhead{Code availability}
+The analysis code (Python standard library only) and the script that builds this manuscript from the results are part of the same replication package, released under the Apache License 2.0.
+
+\bmhead{Author contributions}
+%% PLACEHOLDER: to be confirmed by the author.
+[To be confirmed by the author.]
+
+\bibliography{refs}
+
+\end{document}

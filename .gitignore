@@ -6,3 +6,12 @@ results/.tmp/
 *.zip
 rowData.json
 *.pdf
+# paper/: publisher template files are fetched and hash-checked by build.sh (not redistributed)
+paper/sn-jnl.cls
+paper/sn-basic.bst
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/results.tex.new

@@ -45,3 +45,4 @@ Outputs: `results/metrics.json`, `results/report.md`.
 | `ENV.md` | Environment |
 | `analysis/` | `d1.py` (episode extraction, gate, EMSE 2023 reproduction), `d2.py` (transcriptions, gate), `stats.py` (measures, Wilson, cluster bootstrap), `analyze.py` (entry point) |
 | `data/li-coblenz-2026/` | Two independent (LLM-assisted) transcriptions of the Li & Coblenz tables, and three quoted sentences used in a sensitivity analysis |
+| `paper/` | Manuscript (`main.tex`, `refs.bib`). `bash paper/build.sh` fetches the Springer Nature template (hash-checked, not redistributed), regenerates `results.tex` from `results/metrics.json` and requires it to equal the committed one, and builds `main.pdf` with Tectonic. Every analysis number in the text is taken from `results.tex` |
