@@ -24,6 +24,7 @@ When a debugging episode is closed by *either* a fix *or* the developer stopping
 ## D2 transcription
 
 - Both transcriptions were produced with an LLM-based assistant (Anthropic Claude): A by the session that ran the analysis, B by a separate instance given only the PDF, without access to A. They are byte-identical. Agreement between two instances of the same model guards against slips, not against a shared misreading; the totals check (`config.json` → `d2.gate`) and a check against the PDF by the author (2026-09-28: all 17 rows, the three Table 5 rows and the three quoted sentences agree) are the independent safeguards. See `data/li-coblenz-2026/README.md`.
+- Correction of the provenance text: commit `4aab7f0` described the transcriptions as made "by hand" (`DATA.md`, `ENV.md`) and by "two people ... independently" (`data/p434/README.md`). That was wrong; both were made with an LLM-based assistant, as stated above. The text was corrected in `ae39be6`. No transcribed value changed.
 - For the body-text sensitivity, instance B independently listed the same two tasks that Table 5 omits (P1TA: colleagues and reports of similar issues; S5TA: brainstorming with stream viewers). B also found a documentation mention for "S4" that cannot be attributed to S4TA or S4TB; Table 5 lists S4TB. It is not added. S4TA is resolved, so adding it would lower R0 and R0′ by the same 1/17 and leave the numerator effect unchanged.
 
 ## Limitations of the intervals
