@@ -36,7 +36,8 @@
 \author*[1]{\fnm{Mikoto} \sur{Miura}}\email{mmiura.network@gmail.com}
 % The journal asks for the author's ORCID on the title page. The class's \orcid command draws
 % Orcidlogo.eps, which the publisher's template package does not include, so the iD is added as
-% text to the corresponding-author line instead.
+% text to the corresponding-author line instead. Single author: keep this line directly after the
+% corresponding author's \email (the class prints the line only when an \email is given).
 \makeatletter\g@addto@macro\corrauthemail{ORCID: \url{https://orcid.org/0009-0000-4196-0508}}\makeatother
 \affil*[1]{\orgaddress{\city{Hiroshima}, \country{Japan}}}
 
@@ -387,7 +388,7 @@ Not applicable. This study is a secondary analysis of published, openly licensed
 Not applicable.
 
 \bmhead{Data availability}
-The coded data of D1 are available from the replication packages of \citet{alaboudi2021} (\url{https://figshare.com/s/6c4026a941db49ea3de3}) and \citet{alaboudi2023} (\url{https://figshare.com/s/0e9eac98b8ddd54c384c}) under CC BY 4.0; they are not redistributed with this paper, and the replication package lists their SHA-256 hashes and how to obtain them. The transcriptions of the D2 tables, the analysis configuration and all results are part of the replication package, released under CC BY 4.0 and archived at \url{https://doi.org/10.5281/zenodo.23029603}. The development repository is \url{https://github.com/mikotomiura/self-resolution-measure}; its commit history records that the analysis configuration was committed before the analysis code produced the reported results (Sect.~\ref{sec:definitions}).
+The coded data of D1 are available from the replication packages of \citet{alaboudi2021} (\url{https://figshare.com/s/6c4026a941db49ea3de3}) and \citet{alaboudi2023} (\url{https://figshare.com/s/0e9eac98b8ddd54c384c}) under CC BY 4.0; they are not redistributed with this paper, and the replication package lists their SHA-256 hashes and how to obtain them. The transcriptions of the D2 tables, the analysis configuration and all results are part of the replication package, released under CC BY 4.0 and archived at \url{https://doi.org/10.5281/zenodo.23029603}. The development repository is \url{https://github.com/mikotomiura/self-resolution-measure}; its commit history shows that the analysis configuration was first committed before the analysis code and the results, and later changes to it are logged in the replication package (Sect.~\ref{sec:definitions}).
 
 \bmhead{Code availability}
 The analysis code (Python standard library only) and the script that builds this manuscript from the results are part of the same replication package, released under the Apache License 2.0.

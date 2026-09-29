@@ -2,7 +2,7 @@
 
 How far does an **outcome-agnostic** self-resolution measure drift from an **outcome-requiring** one when debugging episodes are closed by *either* a fix *or* the developer stopping? A reanalysis of two public, human-coded datasets of professional debugging.
 
-Archived copy: <https://doi.org/10.5281/zenodo.23029603> (Zenodo). The commit history of the development repository, <https://github.com/mikotomiura/self-resolution-measure>, records that the analysis configuration was committed before the analysis code produced the reported results; [NOTES.md](NOTES.md) (Freeze) lists what was known before the freeze.
+Archived copy: <https://doi.org/10.5281/zenodo.23029603> (Zenodo). The commit history of the development repository, <https://github.com/mikotomiura/self-resolution-measure>, shows that the analysis configuration was first committed before the analysis code and the results; [NOTES.md](NOTES.md) lists what was known before the freeze (Freeze) and the later changes (Deviations).
 
 | Measure | Definition |
 |---|---|
