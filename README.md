@@ -19,7 +19,7 @@ Replication package for the manuscript by Mikoto Miura
 
 Observational studies of debugging report how often developers consult documentation, the web or other people. The complement, debugging without consultation, is easily read as problems resolved without help. That reading requires every unit without consultation to end in a fix. In the two public, human-coded datasets of professional debugging reanalysed here, however, a unit also ends when the developer stops, and in one of them when observation ends.
 
-This repository defines an **outcome-agnostic** measure and an **outcome-requiring** measure, decomposes their difference exactly, and estimates it under several operational definitions of consultation and resolution. All analysis results reported in the manuscript are produced by the code in this repository.
+This repository defines an **outcome-agnostic** measure, an **outcome-requiring** measure and a **resolution-conditional** measure, decomposes their differences exactly, and estimates them under several operational definitions of consultation and resolution. All analysis results reported in the manuscript are produced by the code in this repository.
 
 ## The measures
 
@@ -41,7 +41,7 @@ Units are debugging episodes in D1 and debugging tasks in D2.
 | **D1** | Alaboudi & LaToza: 89 debugging episodes by 11 developers in live-streamed open-source work (arXiv:2105.02162v1; *Empirical Software Engineering* 28:117, 2023) | The shared coding (`rowData.json`); the replication packages linked from the two versions carry the same, byte-identical coding |
 | **D2** | Li & Coblenz: 17 debugging tasks by 7 professional developers and 5 streamers (*Proc. ACM Softw. Eng.* 3(FSE):FSE049, 2026) | Table 4, three rows of Table 5 and three sentences of the text, transcribed |
 
-Both sources are released under CC BY 4.0. No raw data is committed: [DATA.md](DATA.md) gives the source, the SHA-256 hash and how to obtain every input.
+Both sources are released under CC BY 4.0. No raw data is committed: [DATA.md](DATA.md) gives the source of every input and, for D1, its SHA-256 hashes and how to obtain it; `results/provenance.txt` records the hashes of every input and script used in a run.
 
 ## Quick start
 
@@ -57,8 +57,8 @@ Requirements: Python 3.11 or later (standard library only), `bash`, and `sha256s
 
 ### What `run.sh` checks
 
-1. The hashes of all inputs.
-2. A self-test: the data gates must fail on absent or broken input, the consultation rules must match a truth table, and synthetic controls must recover known values.
+1. The SHA-256 hashes of the D1 input (the figshare zip and the extracted `rowData.json`) and the presence of the D2 transcriptions.
+2. A self-test: the data gates must fail on relabelled or broken input, the consultation rules must match a truth table, and synthetic controls must recover known values.
 3. The analysis itself.
 4. A second run under another hash seed, which must be byte-identical.
 5. Equality of the output with the bundled `results/` (compared with `cmp`, so git is not needed; set `ALLOW_RESULT_CHANGE=1` only after an intended change).
@@ -70,7 +70,7 @@ Requirements: Python 3.11 or later (standard library only), `bash`, and `sha256s
 
 ## Freeze and provenance
 
-- The commit history shows that the analysis configuration (`config.json`) was first committed before the analysis code and the results. [NOTES.md](NOTES.md) lists what was known before the freeze (Freeze) and every later change (Deviations).
+- The commit history shows that the analysis configuration (`config.json`) was first committed before the analysis code and the results. [NOTES.md](NOTES.md) lists what was known before the freeze (Freeze) and the later changes to the analysis (Deviations).
 - The D2 tables were transcribed twice by separate instances of an LLM-based assistant; the two transcriptions are byte-identical and were checked against totals in the paper and against the PDF by the author ([data/li-coblenz-2026/README.md](data/li-coblenz-2026/README.md)).
 - An archived copy of version `submission-2026-09-29` is on Zenodo: <https://doi.org/10.5281/zenodo.23029603>.
 
@@ -85,7 +85,7 @@ Requirements: Python 3.11 or later (standard library only), `bash`, and `sha256s
 | [`results/`](results) | `metrics.json`, `report.md`, `provenance.txt` |
 | [`paper/`](paper) | Manuscript source (`main.tex`, `refs.bib`), generated `results.tex`, and its build |
 | [`NOTES.md`](NOTES.md) | Question, what is not new, the freeze, deviations |
-| [`DATA.md`](DATA.md) | Provenance and hashes of every input |
+| [`DATA.md`](DATA.md) | Provenance of every input; hashes and how to obtain D1 |
 | [`ENV.md`](ENV.md) | Environment |
 
 ## Citation
