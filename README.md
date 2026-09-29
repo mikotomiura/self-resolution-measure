@@ -2,6 +2,8 @@
 
 How far does an **outcome-agnostic** self-resolution measure drift from an **outcome-requiring** one when debugging episodes are closed by *either* a fix *or* the developer stopping? A reanalysis of two public, human-coded datasets of professional debugging.
 
+Archived copy: <https://doi.org/10.5281/zenodo.23029603> (Zenodo). The commit history of this repository records the order of the freeze and the analysis.
+
 | Measure | Definition |
 |---|---|
 | R0 | episodes that ended with no consultation of external resources / all episodes |
@@ -33,7 +35,7 @@ Outputs: `results/metrics.json`, `results/report.md`.
 
 - Code (`analysis/`, `run.sh`, `paper/build.sh`, `paper/make_results.py`): Apache License 2.0 ([LICENSE](LICENSE)).
 - Data derived here (`data/`, `results/`, `paper/results.tex`), `config.json` and documentation: CC BY 4.0 ([LICENSE-DATA](LICENSE-DATA)). Sentences quoted from third-party papers (in `config.json`, `results/` and `data/`) are quotations and remain under their original terms.
-- The manuscript (`paper/main.tex`, `paper/refs.bib`) is **not** covered by either licence; its terms will be set when it is submitted and posted as a preprint.
+- The manuscript (`paper/main.tex`, `paper/refs.bib`): CC BY 4.0 ([LICENSE-DATA](LICENSE-DATA)). Passages quoted from other works remain under their original terms.
 - The Springer Nature template files (`sn-jnl.cls`, `sn-basic.bst`) are not redistributed; `paper/build.sh` downloads the publisher's package and checks its SHA-256.
 - Third-party sources keep their own licences and must be attributed: the Alaboudi & LaToza replication packages (CC BY 4.0; not redistributed here) and the Li & Coblenz paper (CC BY 4.0; its tables are transcribed in `data/li-coblenz-2026/`, see [data/li-coblenz-2026/README.md](data/li-coblenz-2026/README.md)).
 
